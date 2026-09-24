@@ -1,0 +1,5 @@
+# The fleet gate is the starter repository's own acceptance test: it creates a whole
+# project, drops and recreates test databases and spawns servers. It is run from
+# this checkout (composer fleet-gate) and never ships into an installation.
+/tests/Fleet export-ignore
+/docs/fleet-gate.md export-ignore
