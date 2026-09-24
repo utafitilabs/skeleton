@@ -61,11 +61,14 @@ a new minor never means that.
 ## The fleet gate
 
 A tag anywhere in the fleet — this starter, the core, an official module — is
-not done until `composer fleet-gate` has run green here, and a change is not
-ready to tag until `composer fleet-gate:head` has. Both create a project from
-this starter with the README's own commands and install every official module
-into it, one by one. [fleet-gate.md](fleet-gate.md) has the steps, the two modes and
-how to read a red run.
+not done until the fleet gate has run green against the published packages, and
+a change is not ready to tag until the gate has run green against the branches.
+The gate is `bin/console fleet:gate`, a command of `uhifadhi/devkit-module`: it
+creates a project from this starter with the README's own commands and installs
+every official module into it, one by one. The tag itself is minted by the
+Release workflow in the repository being tagged, which runs both gates around
+it. `docs/fleet-gate.md` and `docs/release-workflow.md` in devkit-module have the
+steps, the two modes and how to read a red run.
 
 ## The recipe ledger
 

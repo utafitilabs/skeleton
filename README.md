@@ -23,6 +23,7 @@ installed with composer.
 - [What is behind sign-in](#what-is-behind-sign-in)
 - [The front door](#the-front-door)
 - [Versions and branches](#versions-and-branches)
+- [How it is proven](#how-it-is-proven)
 - [Learn more](#learn-more)
 - [Licence](#licence)
 
@@ -308,6 +309,18 @@ that line; the same goes for every module in the table above.
 Every package of the fleet is listed on Packagist, so a plain
 `composer require` finds it. Telemetry, the managed-hosting tier's module, is
 private and not part of an installation's own list.
+
+## How it is proven
+
+Every tag in the fleet is minted by a Release workflow in the repository being
+tagged, and that workflow runs the **fleet gate** — `bin/console fleet:gate`, a
+command of `uhifadhi/devkit-module` — on both sides of the tag: against the
+branches before it, and against the published packages after it. The gate does
+precisely what the install guide above does, in a directory that did not exist a
+minute ago, and then installs every official module into it one by one and opens
+each module's first page as an administrator. A tag is not done until the
+published fleet installs. The steps, the modes and how to read a red run are in
+devkit-module's `docs/fleet-gate.md`.
 
 ## Learn more
 

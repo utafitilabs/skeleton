@@ -6,29 +6,16 @@
          colors="true"
          failOnDeprecation="true"
          failOnNotice="true"
-         failOnWarning="true"
-         defaultTestSuite="default">
+         failOnWarning="true">
     <php>
         <ini name="display_errors" value="1"/>
         <ini name="error_reporting" value="-1"/>
         <server name="APP_ENV" value="test" force="true"/>
         <server name="SHELL_VERBOSITY" value="-1"/>
     </php>
-    <!-- `defaultTestSuite` on <phpunit> and <exclude> inside a <testsuite> are
-         both in the schema this file declares above:
-           <xs:attribute name="defaultTestSuite" type="xs:string" default=""/>
-           <xs:element name="exclude" type="xs:string"/>  (in testSuiteType)
-         @see vendor/phpunit/phpunit/phpunit.xsd
-         @see https://docs.phpunit.de/en/13.3/configuration.html#the-testsuite-element -->
     <testsuites>
         <testsuite name="default">
             <directory>tests</directory>
-            <exclude>tests/Fleet</exclude>
-        </testsuite>
-        <!-- The fleet gate creates a whole project and installs every official
-             module; minutes, not seconds. `composer fleet-gate` runs it. -->
-        <testsuite name="fleet">
-            <directory>tests/Fleet</directory>
         </testsuite>
     </testsuites>
     <source restrictNotices="true" restrictWarnings="true">

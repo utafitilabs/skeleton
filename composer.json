@@ -34,10 +34,7 @@
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.95.25",
         "phpunit/phpunit": "^13.3.2",
-        "symfony/browser-kit": "8.1.*",
-        "symfony/css-selector": "8.1.*",
-        "symfony/http-client": "8.1.*",
-        "symfony/process": "8.1.*"
+        "symfony/browser-kit": "8.1.*"
     },
     "config": {
         "allow-plugins": {
@@ -88,9 +85,7 @@
         "check": [
             "@cs:check",
             "@test"
-        ],
-        "fleet-gate": "phpunit --testsuite fleet",
-        "fleet-gate:head": "FLEET_GATE_MODE=head phpunit --testsuite fleet"
+        ]
     },
     "conflict": {
         "symfony/symfony": "*"
