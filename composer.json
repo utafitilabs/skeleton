@@ -28,7 +28,7 @@
         "symfony/runtime": "8.1.*",
         "symfony/security-bundle": "8.1.*",
         "symfony/yaml": "8.1.*",
-        "uhifadhi/uhifadhi": "^0.1",
+        "uhifadhi/uhifadhi": "^0.1.1",
         "utafitilabs/postgis-bundle": "^0.1"
     },
     "require-dev": {
