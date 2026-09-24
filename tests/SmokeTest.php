@@ -81,6 +81,22 @@ final class SmokeTest extends KernelTestCase
         self::assertArrayHasKey((new \ReflectionClass($class))->getShortName(), $bundles);
     }
 
+    /**
+     * THE FRONT DOOR IS THE DASHBOARD, and only the dashboard. The shell's welcome
+     * page is not mounted: two routes at `/` would leave the second one dead and
+     * a reader of `debug:router` guessing which answers.
+     */
+    public function testTheWelcomePageIsNotMountedBehindTheDashboard(): void
+    {
+        self::bootKernel();
+        $router = self::getContainer()->get(RouterInterface::class);
+
+        self::assertNull($router->getRouteCollection()->get('welcome'), 'the shell\'s welcome page must not be mounted');
+        self::assertSame('organisation_dashboard', $router->match('/')['_route']);
+        self::assertNotNull($router->getRouteCollection()->get('settings'), 'the settings section is mounted');
+        self::assertNotNull($router->getRouteCollection()->get('favicon'), 'the favicon is mounted');
+    }
+
     #[DataProvider('mountedRoutes')]
     public function testTheCoreScreensAreMounted(string $name, string $path): void
     {

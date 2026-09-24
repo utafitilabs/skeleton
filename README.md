@@ -21,7 +21,7 @@ installed with composer.
   - [5. Serve it](#5-serve-it)
   - [6. Add modules](#6-add-modules)
 - [What is behind sign-in](#what-is-behind-sign-in)
-- [Extending or replacing the welcome page](#extending-or-replacing-the-welcome-page)
+- [The front door](#the-front-door)
 - [Versions and branches](#versions-and-branches)
 - [Learn more](#learn-more)
 - [Licence](#licence)
@@ -288,21 +288,14 @@ What a signed-in person may *do* is not decided there. Each module declares its
 own permissions and checks them in its own controllers, per action, per object
 and per area — which a path rule could not express anyway.
 
-## Extending or replacing the welcome page
+## The front door
 
-The shell ships the welcome page at `/`, mounted by one line of consent in
-`config/routes/shell.yaml`:
-
-```yaml
-shell:
-    resource: '@ShellBundle/config/routes/welcome.php'
-```
-
-The shell loads that resource nowhere; the import is what makes `/` answer. Edit
-the file to point `/` at your own home screen, or delete it and the address is
-yours again — nothing is left behind. `debug:router` shows what you are
-replacing: a route named `welcome`. Your own first page extends one of the
-shell's three frames and fills one block:
+`/` is the organisation's dashboard, mounted with the rest of the area screens by
+`config/routes/area.yaml`. An installation that wants a home page of its own
+mounts its route at `/` in `config/routes/` and takes that import out; nothing
+else refers to the dashboard's address. The settings section (`/settings`) and
+the favicon are mounted by `config/routes/shell.yaml`, and a page of your own
+extends one of the shell's frames and fills one block:
 
 ```twig
 {# templates/home/index.html.twig #}
@@ -318,7 +311,7 @@ shell's three frames and fills one block:
 ## Versions and branches
 
 Every repository in the fleet — this starter, the core, each module — is
-branched the way Symfony is: a branch per version line, named after it (`0.1`,
+branched one way: a branch per version line, named after it (`0.1`,
 `0.2`, …), the newest line being the default branch where new work lands, and
 tags on those branches as the releases. There is no `main`. `composer.json`
 requires the core with a caret (`^0.1`), which resolves to the latest tag on

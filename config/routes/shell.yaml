@@ -12,9 +12,15 @@
 # existing; nothing is left behind.
 #
 # `debug:router` shows what you are replacing.
-shell:
-    resource: '@ShellBundle/config/routes/welcome.php'
 
 # The configure pages — the area's and every module's, one frame the shell owns.
 shell_configure:
     resource: '@ShellBundle/config/routes/configure.php'
+
+# The settings section: Overview, Installation, Modules, Organisation.
+shell_settings:
+    resource: '@ShellBundle/config/routes/settings.php'
+
+# The favicon.
+shell_favicon:
+    resource: '@ShellBundle/config/routes/favicon.php'
