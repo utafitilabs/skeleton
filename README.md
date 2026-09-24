@@ -241,7 +241,7 @@ because a module adds its own tables and its own assets — and, like the core,
 ships the versions that create them:
 
 ```bash
-composer require uhifadhi/patrol-module
+composer require uhifadhi/storage-module
 php bin/console cache:clear --no-warmup
 php bin/console doctrine:migrations:migrate
 php bin/console cache:warmup
