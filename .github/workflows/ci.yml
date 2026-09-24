@@ -31,7 +31,11 @@ jobs:
           tools: composer:v2
 
       - name: Validate composer.json
-        run: composer validate --strict
+        # An installation is not a published package: create-project drops the
+        # name and description, and --strict would call their absence an error.
+        # "--no-check-publish: Do not emit an error if composer.json suggests
+        # publishing errors" — https://getcomposer.org/doc/03-cli.md#validate
+        run: composer validate --strict --no-check-publish
 
       - name: Cache Composer packages
         uses: actions/cache@v4
