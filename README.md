@@ -253,15 +253,18 @@ for the areas that want it from that area's module grid.
 
 These are the modules the platform ships and keeps in step with the core.
 Install them in this order — a module that builds on another comes after it —
-each one with its line and the three commands above:
+each one with its `composer require` and the three commands above. What a module
+needs beyond that (its configuration, its own database or storage, the settings
+an administrator fills in) and how it is switched on for an area is in the
+module's own README, which is the reference for that module:
 
-| Module | What it adds | Lines |
+| Module | What it adds | Install and switch on |
 |---|---|---|
-| `uhifadhi/storage-module` | where evidence and photographs are kept; the modules below store through it | `composer require uhifadhi/storage-module` |
-| `uhifadhi/patrol-module` | patrols: planning, the handset's tracks and observations, maps, the calendar, exports | `composer require uhifadhi/patrol-module` |
-| `uhifadhi/incident-module` | incidents: the register, the board, area lists, evidence | `composer require uhifadhi/incident-module` |
-| `uhifadhi/roster-module` | duty: shifts, check-ins, who is on watch where | `composer require uhifadhi/roster-module` |
-| `uhifadhi/telemetry-module` | what the installation is doing: captures, crashes, server errors | private, managed-hosting tier: `composer config repositories.telemetry vcs https://github.com/utafitilabs/telemetry-module` with an access token, then `composer require uhifadhi/telemetry-module`; its tables live in a database of their own, created by `php bin/console telemetry:migrate` in place of the migrate step |
+| `uhifadhi/storage-module` | where evidence and photographs are kept; the modules below store through it | [storage-module README](https://github.com/utafitilabs/storage-module#installation) |
+| `uhifadhi/patrol-module` | patrols: planning, the handset's tracks and observations, maps, the calendar, exports | [patrol-module README](https://github.com/utafitilabs/patrol-module#installation) |
+| `uhifadhi/incident-module` | incidents: the register, the board, area lists, evidence | [incident-module README](https://github.com/utafitilabs/incident-module#installation) |
+| `uhifadhi/roster-module` | duty: shifts, check-ins, who is on watch where | [roster-module README](https://github.com/utafitilabs/roster-module#installation) |
+| `uhifadhi/telemetry-module` | what the installation is doing: captures, crashes, server errors — private, managed-hosting tier | [telemetry-module README](https://github.com/utafitilabs/telemetry-module#installation) |
 
 `uhifadhi/devkit-module` is not on this list on purpose: it is the
 development-only package — demo content and the commands that seed it — required
