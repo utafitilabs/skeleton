@@ -89,6 +89,27 @@ final class FleetGateTest extends TestCase
      */
     private const array CATALOGUE_SLUGS = ['patrol' => 'patrols', 'incident' => 'incidents', 'roster' => 'roster'];
 
+    /**
+     * THE AREA THE GATE WORKS IN is the manual's: the worked example's first
+     * area, so the gate's data and the book's are one and the same and no
+     * invented or real place ever enters a test.
+     */
+    private const string AREA_NAME = 'Kilimani Crater Conservation Area';
+
+    /**
+     * WHERE A MODULE FIRST ANSWERS once it is switched on for the area (`%s`
+     * is the area's uuid), and where an infrastructure module answers at all.
+     * "Installed" means an administrator can open this, not that a package is
+     * in the lock file.
+     */
+    private const array MODULE_PAGES = [
+        'storage' => '/files',
+        'patrol' => '/areas/%s/modules/patrols',
+        'incident' => '/areas/%s/modules/incidents',
+        'roster' => '/areas/%s/modules/roster',
+        'telemetry' => '/telemetry',
+    ];
+
     private const string ADMIN_EMAIL = 'gate@example.test';
     private const string ADMIN_PASSWORD = 'fleet-gate-passphrase';
 
@@ -96,6 +117,7 @@ final class FleetGateTest extends TestCase
     private static string $mode = 'released';
     private static ?Process $server = null;
     private static string $baseUrl = '';
+    private static string $areaUuid = '';
 
     public static function setUpBeforeClass(): void
     {
@@ -197,7 +219,8 @@ final class FleetGateTest extends TestCase
     public function testTheAdministratorSignsIn(string $project): string
     {
         self::serve($project);
-        self::signIn('README §5 sign in');
+        $browser = self::signIn('README §5 sign in');
+        self::createTheArea($browser);
 
         return $project;
     }
@@ -234,7 +257,8 @@ final class FleetGateTest extends TestCase
             }
             self::shell(['composer', 'test'], $project, $package.' project smoke suite');
             self::restartServer($project);
-            self::signIn($package.' sign in');
+            $browser = self::signIn($package.' sign in');
+            self::switchOnAndOpen($browser, $module, $package);
         }
 
         self::assertTrue(true, 'every official and private module installed');
@@ -259,7 +283,7 @@ final class FleetGateTest extends TestCase
         self::assertStringContainsString('in sync', $out, $step.': after migrating, the schema must need no further change');
     }
 
-    private static function signIn(string $step): void
+    private static function signIn(string $step): HttpBrowser
     {
         $browser = new HttpBrowser(HttpClient::create());
 
@@ -277,6 +301,63 @@ final class FleetGateTest extends TestCase
         $body = (string) $browser->getResponse()->getContent();
         self::assertStringNotContainsString('name="_password"', $body, $step.': the sign-in form must be gone after signing in');
         self::assertStringContainsString('Ada', $body, $step.': the page names the person who signed in');
+
+        return $browser;
+    }
+
+    /**
+     * THE MANUAL'S AREA, created the way an administrator creates one: the
+     * form at /areas/new, boundary to be imported later. The uuid in the
+     * address the form lands on is the area's, and every module step below
+     * works inside it.
+     */
+    private static function createTheArea(HttpBrowser $browser): void
+    {
+        $crawler = $browser->request('GET', self::$baseUrl.'/areas/new');
+        self::assertSame(200, $browser->getResponse()->getStatusCode(), 'the new-area form answers');
+
+        $form = $crawler->filter('form')->reduce(static fn ($node) => null !== $node->filter('input[name="name"]')->getNode(0))->form();
+        $form['name'] = self::AREA_NAME;
+        if ($form->has('boundary_mode')) {
+            $form['boundary_mode'] = 'later';
+        }
+        $browser->submit($form);
+
+        $landed = (string) $browser->getRequest()->getUri();
+        self::assertSame(200, $browser->getResponse()->getStatusCode(), 'creating the area lands on a page');
+        self::assertMatchesRegularExpression('#/areas/([0-9a-f-]{36})#', $landed, 'the area page carries its uuid: '.$landed);
+        preg_match('#/areas/([0-9a-f-]{36})#', $landed, $m);
+        self::$areaUuid = $m[1];
+        self::assertStringContainsString(self::AREA_NAME, (string) $browser->getResponse()->getContent());
+    }
+
+    /**
+     * SWITCHED ON AND OPENED. A capability module is parked after its install;
+     * the administrator switches it on for the area through the grid's own
+     * form, and its first page then answers. An infrastructure module has no
+     * tile and answers everywhere at once.
+     */
+    private static function switchOnAndOpen(HttpBrowser $browser, string $module, string $step): void
+    {
+        if (isset(self::CATALOGUE_SLUGS[$module])) {
+            $slug = self::CATALOGUE_SLUGS[$module];
+            $crawler = $browser->request('GET', self::$baseUrl.'/areas/'.self::$areaUuid.'/modules/customize');
+            self::assertSame(200, $browser->getResponse()->getStatusCode(), $step.': the area\'s module grid answers');
+            $forms = $crawler->filter('form')->reduce(static function ($node) use ($slug): bool {
+                $input = $node->filter('input[name="module"]')->getNode(0);
+
+                return null !== $input && $slug === $input->getAttribute('value') && str_contains((string) $node->attr('action'), '/install');
+            });
+            if ($forms->count() > 0) {
+                $browser->submit($forms->first()->form());
+                self::assertSame(200, $browser->getResponse()->getStatusCode(), $step.': switching the module on lands on a page');
+            }
+        }
+
+        $page = \sprintf(self::MODULE_PAGES[$module], self::$areaUuid);
+        $browser->request('GET', self::$baseUrl.$page);
+        self::assertSame(200, $browser->getResponse()->getStatusCode(), $step.': '.$page.' answers for the administrator');
+        self::assertStringNotContainsString('name="_password"', (string) $browser->getResponse()->getContent(), $step.': and it is not the sign-in form');
     }
 
     private static function serve(string $project): void

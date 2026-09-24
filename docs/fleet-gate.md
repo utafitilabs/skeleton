@@ -88,9 +88,14 @@ at the first failing step and names it.
 4. **README §5** — the project is served with PHP's built-in server and the
    administrator signs in over HTTP: the sign-in page answers, the form is
    submitted, the redirect is followed, and the page that lands names them.
-5. **README §6, once per official module, in order** — the two composer lines
-   from the README's table, the three console commands, both schema checks, the
-   project's own `composer test`, and the sign-in again.
+   Then the administrator creates the manual's area, Kilimani Crater
+   Conservation Area, through the form at `/areas/new`.
+5. **README §6, once per official module, in order** — the README's
+   `composer require`, the three console commands, both schema checks, the
+   catalogue listing the module, the project's own `composer test`, the sign-in
+   again, the module switched on for the area through the grid's own form, and
+   the module's first page answering for the administrator. Storage and
+   telemetry, which have no tile, answer at the files hub and the console.
 
 The README's official-modules table and the list the gate installs are the same
 list; a test in the suite fails when they drift.
