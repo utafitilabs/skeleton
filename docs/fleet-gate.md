@@ -110,5 +110,6 @@ Set `FLEET_GATE_KEEP=1` to keep the project directory and look inside it.
 ## Adding an official module
 
 Add it to `OFFICIAL_MODULES` in `tests/Fleet/FleetGateTest.php`, after any
-module it requires, and to the README's *Official modules* table with its two
-lines. The gate's own list test fails until both are done.
+module it requires, and to the README's *Official modules* table. The gate's own
+list test fails until both are done. A private module of the managed-hosting
+tier goes into `PRIVATE_MODULES` instead and stays out of the README.

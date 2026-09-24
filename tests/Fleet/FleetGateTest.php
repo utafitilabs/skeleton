@@ -69,8 +69,16 @@ final class FleetGateTest extends TestCase
         'patrol',
         'incident',
         'roster',
-        'telemetry',
     ];
+
+    /**
+     * THE PRIVATE MODULES of the managed-hosting tier: not in the README's table,
+     * because an installer never requires them, but installed by the gate after
+     * the official ones so the tier is proven the same way.
+     *
+     * @var list<string>
+     */
+    public const array PRIVATE_MODULES = ['telemetry'];
 
     private const string ADMIN_EMAIL = 'gate@example.test';
     private const string ADMIN_PASSWORD = 'fleet-gate-passphrase';
@@ -189,7 +197,7 @@ final class FleetGateTest extends TestCase
     #[Depends('testTheAdministratorSignsIn')]
     public function testEveryOfficialModuleInstallsOneByOne(string $project): void
     {
-        foreach (self::OFFICIAL_MODULES as $module) {
+        foreach ([...self::OFFICIAL_MODULES, ...self::PRIVATE_MODULES] as $module) {
             $package = 'uhifadhi/'.$module.'-module';
             self::say('module '.$package);
 
@@ -216,7 +224,7 @@ final class FleetGateTest extends TestCase
             self::signIn($package.' sign in');
         }
 
-        self::assertTrue(true, 'every official module installed');
+        self::assertTrue(true, 'every official and private module installed');
     }
 
     // ── the steps' shared moves ─────────────────────────────────────────────

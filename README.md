@@ -265,7 +265,6 @@ module's own README, which is the reference for that module:
 | `uhifadhi/patrol-module` | patrols: planning, the handset's tracks and observations, maps, the calendar, exports | [patrol-module README](https://github.com/utafitilabs/patrol-module#installation) |
 | `uhifadhi/incident-module` | incidents: the register, the board, area lists, evidence | [incident-module README](https://github.com/utafitilabs/incident-module#installation) |
 | `uhifadhi/roster-module` | duty: shifts, check-ins, who is on watch where | [roster-module README](https://github.com/utafitilabs/roster-module#installation) |
-| `uhifadhi/telemetry-module` | what the installation is doing: captures, crashes, server errors — private, managed-hosting tier | [telemetry-module README](https://github.com/utafitilabs/telemetry-module#installation) |
 
 `uhifadhi/devkit-module` is not on this list on purpose: it is the
 development-only package — demo content and the commands that seed it — required
