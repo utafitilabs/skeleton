@@ -22,7 +22,7 @@ installed with composer.
   - [6. Add modules](#6-add-modules)
 - [What is behind sign-in](#what-is-behind-sign-in)
 - [Extending or replacing the welcome page](#extending-or-replacing-the-welcome-page)
-- [Why the core is required at `@dev`](#why-the-core-is-required-at-dev)
+- [Versions and branches](#versions-and-branches)
 - [Learn more](#learn-more)
 - [Licence](#licence)
 
@@ -60,12 +60,12 @@ Uhifadhi is structured like the thing it protects.
 
 **The seed** is this starter, `uhifadhi/skeleton`: planted once by
 `composer create-project`, so boring it never changes. **The core** —
-[`uhifadhi/uhifadhi`](https://github.com/uhifadhilabs/uhifadhi) — is updated
+[`uhifadhi/uhifadhi`](https://github.com/utafitilabs/uhifadhi) — is updated
 forever through composer, and it holds the registry every module registers with,
 the shell you see, the team, the areas and the atlas every map and chart is
 drawn with. **The branches** are the modules, `uhifadhi/<name>-module`, one per
 capability. **The contracts**
-([`src/Uhifadhi/Contracts/docs`](https://github.com/uhifadhilabs/uhifadhi/tree/main/src/Uhifadhi/Contracts/docs))
+([`src/Uhifadhi/Contracts/docs`](https://github.com/utafitilabs/uhifadhi/tree/main/src/Uhifadhi/Contracts/docs))
 are the interfaces every branch carries without carrying the core: a module can
 depend on them alone, and they are MIT, because an interface anybody may
 implement should cost nobody anything.
@@ -117,16 +117,12 @@ the order is the point.
 
 ## 1. Create the project
 
-Until the packages are tagged and listed on Packagist, both flags are required:
-`--repository` because there is no Packagist listing to resolve
-`uhifadhi/skeleton` from, and `--stability=dev` because the only version that
-exists is the `main` branch, which the default minimum stability of `stable`
-does not match.
+Until the packages are listed on Packagist, `--repository` tells composer where
+to find `uhifadhi/skeleton`; it resolves the latest tag.
 
 ```bash
 composer create-project uhifadhi/skeleton park \
-  --stability=dev \
-  --repository='{"type":"vcs","url":"https://github.com/uhifadhilabs/skeleton"}'
+  --repository='{"type":"vcs","url":"https://github.com/utafitilabs/skeleton"}'
 cd park
 ```
 
@@ -219,7 +215,7 @@ command the platform offers. Requiring it as a dev dependency is what makes the
 command exist; a production build never has it, and never has the command.
 
 ```bash
-composer require --dev "uhifadhi/devkit-module:^0.1@dev"
+composer require --dev "uhifadhi/devkit-module:^0.1"
 php bin/console team:user:create you@example.org Ada Mwangi --tier=super-admin
 ```
 
@@ -252,7 +248,7 @@ ships the versions that create them. Until the modules are listed on Packagist,
 the first line tells composer where the module lives:
 
 ```bash
-composer config repositories.patrol vcs https://github.com/uhifadhilabs/patrol-module
+composer config repositories.patrol vcs https://github.com/utafitilabs/patrol-module
 composer require uhifadhi/patrol-module
 php bin/console doctrine:migrations:migrate
 php bin/console cache:clear
@@ -270,11 +266,11 @@ each one with its two lines and the three commands above:
 
 | Module | What it adds | Lines |
 |---|---|---|
-| `uhifadhi/storage-module` | where evidence and photographs are kept; the modules below store through it | `composer config repositories.storage vcs https://github.com/uhifadhilabs/storage-module` · `composer require uhifadhi/storage-module` |
-| `uhifadhi/patrol-module` | patrols: planning, the handset's tracks and observations, maps, the calendar, exports | `composer config repositories.patrol vcs https://github.com/uhifadhilabs/patrol-module` · `composer require uhifadhi/patrol-module` |
-| `uhifadhi/incident-module` | incidents: the register, the board, area lists, evidence | `composer config repositories.incident vcs https://github.com/uhifadhilabs/incident-module` · `composer require uhifadhi/incident-module` |
-| `uhifadhi/roster-module` | duty: shifts, check-ins, who is on watch where | `composer config repositories.roster vcs https://github.com/uhifadhilabs/roster-module` · `composer require uhifadhi/roster-module` |
-| `uhifadhi/telemetry-module` | what the installation is doing: captures, crashes, server errors | `composer config repositories.telemetry vcs https://github.com/uhifadhilabs/telemetry-module` · `composer require uhifadhi/telemetry-module` |
+| `uhifadhi/storage-module` | where evidence and photographs are kept; the modules below store through it | `composer config repositories.storage vcs https://github.com/utafitilabs/storage-module` · `composer require uhifadhi/storage-module` |
+| `uhifadhi/patrol-module` | patrols: planning, the handset's tracks and observations, maps, the calendar, exports | `composer config repositories.patrol vcs https://github.com/utafitilabs/patrol-module` · `composer require uhifadhi/patrol-module` |
+| `uhifadhi/incident-module` | incidents: the register, the board, area lists, evidence | `composer config repositories.incident vcs https://github.com/utafitilabs/incident-module` · `composer require uhifadhi/incident-module` |
+| `uhifadhi/roster-module` | duty: shifts, check-ins, who is on watch where | `composer config repositories.roster vcs https://github.com/utafitilabs/roster-module` · `composer require uhifadhi/roster-module` |
+| `uhifadhi/telemetry-module` | what the installation is doing: captures, crashes, server errors | `composer config repositories.telemetry vcs https://github.com/utafitilabs/telemetry-module` · `composer require uhifadhi/telemetry-module` |
 
 `uhifadhi/devkit-module` is not on this list on purpose: it is the
 development-only package from section 4, required with `--dev`, and a
@@ -321,20 +317,20 @@ shell's three frames and fills one block:
 {% endblock %}
 ```
 
-## Why the core is required at `@dev`
+## Versions and branches
 
-`composer.json` requires `uhifadhi/uhifadhi: ^1.0@dev` rather than a plain
-version constraint, because the core carries no tagged release: the only version
-that resolves is its `main` branch, and `@dev` is what accepts one. Devkit is
-untagged on the same terms, which is why step 4 spells its stability out too.
-Both repositories are public — the constraint is about tags, not access.
+Every repository in the fleet — this starter, the core, each module — is
+branched the way Symfony is: a branch per version line, named after it (`0.1`,
+`0.2`, …), the newest line being the default branch where new work lands, and
+tags on those branches as the releases. There is no `main`. `composer.json`
+requires the core with a caret (`^0.1`), which resolves to the latest tag on
+that line; the same goes for every module in the table above.
 
-The `vcs` entries beside that requirement are there because Composer reads
+The `vcs` entries beside those requirements are there because Composer reads
 `repositories` only from the root package and never from a dependency, so this
-file names the core's repository and devkit's itself. Once the packages are
-tagged and listed on Packagist, the `@dev` constraints and the `vcs` entries
-all come out; until then [step 1](#1-create-the-project) carries the flags
-`create-project` needs.
+file names the core's repository and devkit's itself, and step 6 names each
+module's. Once the packages are listed on Packagist the `vcs` entries come out;
+nothing else changes.
 
 ## Learn more
 

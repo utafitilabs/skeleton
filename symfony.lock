@@ -277,7 +277,7 @@
     "uhifadhi/uhifadhi": {
         "version": "1.0",
         "recipe": {
-            "repo": "github.com/uhifadhilabs/recipes",
+            "repo": "github.com/utafitilabs/recipes",
             "branch": "main",
             "version": "1.0",
             "ref": "53aedacc6bd1c9b4b58f1df80ec6f1f657cd8143"

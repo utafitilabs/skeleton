@@ -37,9 +37,9 @@ use Symfony\Component\Process\Process;
  *                                published repositories. Run after ANY tag in
  *                                the fleet; the tag is not done until this is
  *                                green.
- *   composer fleet-gate:head     head — the same steps against the committed
- *                                HEAD of the sibling checkouts on this machine,
- *                                so "if I tagged everything right now, would an
+ *   composer fleet-gate:head     head — the same steps against the branch each
+ *                                sibling checkout has out, as last committed, so
+ *                                "if I tagged everything right now, would an
  *                                install work?" is answered before the tag.
  *
  * It is a PHPUnit test so that it lives in the project and runs from any
@@ -127,7 +127,7 @@ final class FleetGateTest extends TestCase
         // whose copied container would report itself fresh forever.
         $repository = 'head' === self::$mode
             ? ['type' => 'vcs', 'url' => $skeleton]
-            : ['type' => 'vcs', 'url' => 'https://github.com/uhifadhilabs/skeleton'];
+            : ['type' => 'vcs', 'url' => 'https://github.com/utafitilabs/skeleton'];
 
         self::shell([
             'composer', 'create-project', 'uhifadhi/skeleton', self::$project,
@@ -141,7 +141,7 @@ final class FleetGateTest extends TestCase
             self::pointAt('uhifadhi/uhifadhi', self::workspace().'/uhifadhi');
             // The branch by name: `@dev` alone would still prefer a tag where
             // one exists, and a tag is exactly what head mode must not test.
-            self::shell(['composer', 'require', 'uhifadhi/uhifadhi:dev-main', '--no-interaction', '--no-progress'], self::$project, 'head: core from the checkout');
+            self::shell(['composer', 'require', 'uhifadhi/uhifadhi:'.self::headVersion(self::workspace().'/uhifadhi'), '--no-interaction', '--no-progress'], self::$project, 'head: core from the checkout');
         }
 
         self::assertFileExists(self::$project.'/config/bundles.php');
@@ -171,7 +171,9 @@ final class FleetGateTest extends TestCase
         if ('head' === self::$mode) {
             self::pointAt('uhifadhi/devkit-module', self::workspace().'/devkit-module');
         }
-        $devkit = 'head' === self::$mode ? 'uhifadhi/devkit-module:dev-main' : 'uhifadhi/devkit-module:^0.1@dev';
+        $devkit = 'head' === self::$mode
+            ? 'uhifadhi/devkit-module:'.self::headVersion(self::workspace().'/devkit-module')
+            : 'uhifadhi/devkit-module:^0.1';
         self::shell(['composer', 'require', '--dev', $devkit, '--no-interaction', '--no-progress'], $project, 'README §4 devkit');
         $out = self::shell([
             'php', 'bin/console', 'team:user:create', self::ADMIN_EMAIL, 'Ada', 'Mwangi',
@@ -202,10 +204,10 @@ final class FleetGateTest extends TestCase
 
             if ('head' === self::$mode) {
                 self::pointAt($package, self::workspace().'/'.$module.'-module');
-                self::shell(['composer', 'require', $package.':dev-main', '--no-interaction', '--no-progress'], $project, $package.' require (head)');
+                self::shell(['composer', 'require', $package.':'.self::headVersion(self::workspace().'/'.$module.'-module'), '--no-interaction', '--no-progress'], $project, $package.' require (head)');
             } else {
                 // The README's own two lines: name the repository, then require.
-                self::shell(['composer', 'config', 'repositories.'.$module, 'vcs', 'https://github.com/uhifadhilabs/'.$module.'-module'], $project, $package.' repository');
+                self::shell(['composer', 'config', 'repositories.'.$module, 'vcs', 'https://github.com/utafitilabs/'.$module.'-module'], $project, $package.' repository');
                 self::shell(['composer', 'require', $package, '--no-interaction', '--no-progress'], $project, $package.' require');
             }
 
@@ -291,6 +293,19 @@ final class FleetGateTest extends TestCase
         self::assertDirectoryExists($checkout.'/.git', \sprintf('head mode reads %s as a git repository', $checkout));
         $name = str_replace('/', '-', $package);
         self::shell(['composer', 'config', 'repositories.'.$name, 'vcs', $checkout], self::$project, 'head: '.$package.' from '.$checkout);
+    }
+
+    /**
+     * THE BRANCH EACH CHECKOUT HAS OUT, as composer names it: a version line
+     * such as `0.3` is `0.3.x-dev`, anything else is `dev-<branch>`. Nobody
+     * switches branches to run the gate; it tests what is being worked on.
+     */
+    private static function headVersion(string $checkout): string
+    {
+        $branch = trim((new Process(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], $checkout))->mustRun()->getOutput());
+        self::assertNotSame('HEAD', $branch, $checkout.' is on a detached HEAD; check out a branch');
+
+        return preg_match('/^\d+\.\d+$/', $branch) ? $branch.'.x-dev' : 'dev-'.$branch;
     }
 
     private static function workspace(): string

@@ -3,7 +3,7 @@ name: CI
 # The skeleton's whole promise is "it boots green". This is the gate that keeps it true.
 on:
   push:
-    branches: [main]
+    branches: ['**']   # every version line (0.1, 0.2, …) and every feature branch
   pull_request:
 
 permissions:

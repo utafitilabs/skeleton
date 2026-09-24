@@ -31,7 +31,7 @@ answer depends on tags rather than commits.
 
 | | `composer fleet-gate` | `composer fleet-gate:head` |
 |---|---|---|
-| resolves packages from | the published repositories, exactly as the README's own commands do | the committed `HEAD` of the sibling checkouts on this machine (`../uhifadhi`, `../patrol-module`, …), read as git repositories — commit before you run it |
+| resolves packages from | the published repositories, exactly as the README's own commands do | the branch each sibling checkout has out (`../uhifadhi`, `../patrol-module`, …), read as git repositories at its last commit — commit before you run it, but never switch branches for it |
 | answers | does the released fleet install and run | would the fleet install and run if everything were tagged right now |
 | runs | **after any tag** in the fleet — core, starter or module | **before a tag**, while the work is still on a branch |
 

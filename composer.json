@@ -20,11 +20,11 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/uhifadhilabs/uhifadhi"
+            "url": "https://github.com/utafitilabs/uhifadhi"
         },
         {
             "type": "vcs",
-            "url": "https://github.com/uhifadhilabs/devkit-module"
+            "url": "https://github.com/utafitilabs/devkit-module"
         }
     ],
     "require": {
@@ -110,7 +110,7 @@
             "allow-contrib": false,
             "require": "8.1.*",
             "endpoint": [
-                "https://api.github.com/repos/uhifadhilabs/recipes/contents/index.json?ref=flex/main",
+                "https://api.github.com/repos/utafitilabs/recipes/contents/index.json?ref=flex/main",
                 "flex://defaults"
             ]
         }

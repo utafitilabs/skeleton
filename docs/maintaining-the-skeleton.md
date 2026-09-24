@@ -71,7 +71,7 @@ how to read a red run.
 
 `symfony.lock` records, for every installed package, which recipe version was
 applied, its hash and the files it owns. Change a recipe's bytes in the
-[recipes](https://github.com/uhifadhilabs/recipes) repository, add a recipe
+[recipes](https://github.com/utafitilabs/recipes) repository, add a recipe
 version, or hand-edit a recipe-owned file here, and the ledger has to be
 re-synced:
 
