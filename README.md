@@ -266,10 +266,13 @@ module's own README, which is the reference for that module:
 | `uhifadhi/incident-module` | incidents: the register, the board, area lists, evidence | [incident-module README](https://github.com/utafitilabs/incident-module#installation) |
 | `uhifadhi/roster-module` | duty: shifts, check-ins, who is on watch where | [roster-module README](https://github.com/utafitilabs/roster-module#installation) |
 
-`uhifadhi/devkit-module` is not on this list on purpose: it is the
-development-only package — demo content and the commands that seed it — required
-with `composer require --dev uhifadhi/devkit-module` on a developer's machine,
-and a production build never carries it.
+### Official development modules
+
+Required with `--dev`, so a production build never carries them:
+
+| Module | What it adds | Install |
+|---|---|---|
+| `uhifadhi/devkit-module` | demo content and the commands that seed it; every module's development commands in one place | `composer require --dev uhifadhi/devkit-module` · [devkit-module README](https://github.com/utafitilabs/devkit-module#installation) |
 
 ---
 
