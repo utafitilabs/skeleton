@@ -13,6 +13,7 @@ installed with composer.
 - [The tree](#the-tree)
 - [What the core is](#what-the-core-is)
 - [Spatial data and deployment](#spatial-data-and-deployment)
+- [Requirements](#requirements)
 - [Install guide](#install-guide)
   - [1. Create the project](#1-create-the-project)
   - [2. Give it a database](#2-give-it-a-database)
@@ -107,7 +108,19 @@ installation and nothing to generate before the first one runs.
 
 Deployment is a standard Symfony application. This repository ships a production
 `Dockerfile` (FrankenPHP): build the image and run it wherever you host
-containers, next to any PostGIS database.
+containers, next to any PostGIS database. The image warms the cache when it is
+built, through this project's own Composer auto-scripts, so a warm-up that does
+not fit fails the build; the container's entrypoint waits for the database,
+migrates and syncs the catalogue, and does nothing else.
+
+## Requirements
+
+PHP 8.4 or newer with the `ctype`, `iconv`, `intl` and `pdo_pgsql` extensions,
+Composer, and a PostgreSQL database with PostGIS.
+
+Turn OPcache on for the command line on a development box — `opcache.enable_cli=1`
+in `php.ini` — so the console executes cached opcodes instead of keeping every
+class it compiles in the process heap.
 
 ---
 
@@ -160,13 +173,18 @@ generate: you run them.
 ```bash
 php bin/console cache:clear --no-warmup
 php bin/console doctrine:migrations:migrate
+php bin/console registry:sync
 php bin/console cache:warmup
 ```
 
-Clearing and warming are two commands on purpose. `cache:clear` on its own warms
-the new cache while the old one is still loaded, which with a few modules
-installed needs more than PHP's default 128 MB and dies half way; split, each
-half fits in the default.
+Four commands, in that order: the clear and the warm are the two ends of it, and
+what runs between them needs a cache that already names the installed packages
+and a database it may write to.
+
+`registry:sync` prints what it did — the modules added, kept and retired — and
+exits non-zero, naming `doctrine:migrations:migrate` as the step that comes
+first, when typed before the registry's tables exist. It is idempotent: an
+area's on/off choices and ordering are never revisited by a deploy.
 
 `migrations/` in this project stays **yours** — it is where
 `doctrine:migrations:diff` writes the versions for entities you write in
@@ -197,9 +215,6 @@ provider, and the core's first version then runs and does nothing.
 There is no asset step here. In development AssetMapper serves every stylesheet
 and script straight from its source; compiling them (`asset-map:compile`) is a
 build step, and the production `Dockerfile` runs it when the image is built.
-
-There is no catalogue command to run. The registry reconciles itself with what
-is installed when the cache is warmed.
 
 ## 4. Create the first administrator
 
@@ -237,25 +252,28 @@ quick look.
 
 ## 6. Add modules
 
-A module is one `composer require` and then the steps from section 3 again,
-because a module adds its own tables and its own assets — and, like the core,
-ships the versions that create them:
+Installing a module is `composer require uhifadhi/<name>-module`, then the same
+four lines as any upgrade, because a module adds its own tables and its own
+assets — and, like the core, ships the versions that create them:
 
 ```bash
 composer require uhifadhi/storage-module
 php bin/console cache:clear --no-warmup
 php bin/console doctrine:migrations:migrate
+php bin/console registry:sync
 php bin/console cache:warmup
 ```
 
-The module then appears in the catalogue, and an administrator switches it on
-for the areas that want it from that area's module grid.
+The third is what enters the module in the catalogue and gives every existing
+area its row; `doctrine:migrations:diff` must then report no changes, because a
+module ships its own versions. An administrator then switches the module on for
+the areas that want it from that area's module grid.
 
 ### Official modules
 
 These are the modules the platform ships and keeps in step with the core.
 Install them in this order — a module that builds on another comes after it —
-each one with its `composer require` and the three commands above. What a module
+each one with its `composer require` and the four commands above. What a module
 needs beyond that (its configuration, its own database or storage, the settings
 an administrator fills in) and how it is switched on for an area is in the
 module's own README, which is the reference for that module:

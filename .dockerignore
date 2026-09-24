@@ -8,6 +8,12 @@ tests
 node_modules
 var/cache
 var/log
+# The image installs its own dependencies in the layer above; copying a host
+# vendor/ over them would replace an installed package with whatever the
+# developer has linked there.
+/vendor
+/assets/vendor
+/public/assets
 .env.local
 .env.*.local
 *.md
