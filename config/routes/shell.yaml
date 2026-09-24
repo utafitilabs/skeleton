@@ -17,7 +17,7 @@
 shell_configure:
     resource: '@ShellBundle/config/routes/configure.php'
 
-# The settings section: Overview, Installation, Modules, Organisation.
+# The settings section: Overview, Installation, Modules, Organization.
 shell_settings:
     resource: '@ShellBundle/config/routes/settings.php'
 

@@ -48,8 +48,8 @@ final class SmokeTest extends KernelTestCase
      */
     public static function mountedRoutes(): iterable
     {
-        // THE ROOT IS THE CONTROL ROOM — the organisation's dashboard, which every account reaches.
-        yield 'the control room' => ['organisation_dashboard', '/'];
+        // THE ROOT IS THE CONTROL ROOM — the organization's dashboard, which every account reaches.
+        yield 'the control room' => ['organization_dashboard', '/'];
         yield 'the sign-in screen' => ['team_login', '/login'];
         yield 'the area register' => ['area_index', '/areas'];
         // The name is the core's, and the assertion is on the address as much
@@ -92,7 +92,7 @@ final class SmokeTest extends KernelTestCase
         $router = self::getContainer()->get(RouterInterface::class);
 
         self::assertNull($router->getRouteCollection()->get('welcome'), 'the shell\'s welcome page must not be mounted');
-        self::assertSame('organisation_dashboard', $router->match('/')['_route']);
+        self::assertSame('organization_dashboard', $router->match('/')['_route']);
         self::assertNotNull($router->getRouteCollection()->get('settings'), 'the settings section is mounted');
         self::assertNotNull($router->getRouteCollection()->get('favicon'), 'the favicon is mounted');
     }

@@ -28,12 +28,12 @@ installed with composer.
 
 ## What uhifadhi is
 
-An installation of uhifadhi is one organisation's own observatory over the
+An installation of uhifadhi is one organization's own observatory over the
 protected areas it manages. Each area is a real place in the database: a
 gazetted boundary drawn on the map, the zones inside it, and the record of what
-happens there. Around the areas stands the organisation itself — its people,
+happens there. Around the areas stands the organization itself — its people,
 the positions they hold, and the permissions each position carries. On top of
-that come the capabilities the organisation actually runs — patrols, incidents,
+that come the capabilities the organization actually runs — patrols, incidents,
 rosters — and each of those arrives as a **module** that an administrator
 installs and then switches on for the areas that want it. An area that runs no
 patrols never sees the patrol screens.
@@ -50,7 +50,7 @@ and the shell never learns any module's name — it renders what the registry
 tells it is installed.
 
 A fresh installation is empty, and honestly so. There are no demo areas, no
-sample team and no pre-installed capabilities: an organisation creates its own
+sample team and no pre-installed capabilities: an organization creates its own
 areas, invites its own people and installs the modules it needs. The install
 guide below is the ordered path from nothing to that first signed-in screen.
 
@@ -290,7 +290,7 @@ and per area — which a path rule could not express anyway.
 
 ## The front door
 
-`/` is the organisation's dashboard. What it shows is chosen on the dashboard
+`/` is the organization's dashboard. What it shows is chosen on the dashboard
 itself: an administrator picks one of the shipped presets or arranges the
 widgets, per installation and per person, and nothing about it is configured in
 files. The settings section (`/settings`) and the favicon are mounted by
