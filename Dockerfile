@@ -2,13 +2,12 @@
 # uhifadhi production image — FrankenPHP (Caddy) + PHP 8.4. Single artifact: the
 # PHP app, built and run from one image.
 #
-# This is the deploy shape every installation inherits, so it stays at the level a
-# bare kernel needs. Capability that needs more from the image brings it as a
-# layer of its own:
-#   * an asset pipeline (importmap:install / tailwind:build / asset-map:compile)
-#     arrives with the canopy — a kernel with no assets has nothing to compile;
-#   * raster/GIS tooling (GDAL et al) arrives with the module that ingests rasters.
-# Add those build steps when you add the bundle that needs them.
+# This is the deploy shape every installation inherits. The core ships assets,
+# so the image builds them: importmap:install fetches the vendor JavaScript and
+# asset-map:compile writes public/assets — the one place assets are ever
+# compiled; in development AssetMapper serves them from source. Capability that
+# needs more from the image brings it as a layer of its own (raster/GIS tooling
+# arrives with the module that ingests rasters).
 FROM dunglas/frankenphp:1-php8.4 AS base
 
 WORKDIR /app
@@ -47,8 +46,13 @@ RUN --mount=type=secret,id=COMPOSER_AUTH \
 # 2) Application source.
 COPY . .
 
-# 3) Optimise the autoloader.
+# 3) Optimise the autoloader and build the assets. No secrets and no database are
+#    needed for either: importmap:install fetches the vendor JavaScript because
+#    assets/vendor is not committed; asset-map:compile writes public/assets, which
+#    is not committed either.
 RUN composer dump-autoload --no-dev --optimize --classmap-authoritative \
+    && php bin/console importmap:install \
+    && php bin/console asset-map:compile \
     && mkdir -p var && chown -R www-data:www-data var \
     && chmod +x .docker/docker-entrypoint.sh
 
