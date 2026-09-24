@@ -47,6 +47,12 @@ jobs:
       # `install`, not `update`: this is exactly what `composer create-project`
       # resolves for someone installing the skeleton, so it is what must be green.
       - name: Install dependencies
+        env:
+          # Composer downloads GitHub-hosted packages through the API, which
+          # rate-limits an anonymous runner; the runner's own token covers public
+          # packages, and a BUNDLES_TOKEN secret is needed only where a private
+          # package (the telemetry module) is installed, and wins when set.
+          COMPOSER_AUTH: '{"github-oauth":{"github.com":"${{ secrets.BUNDLES_TOKEN || secrets.GITHUB_TOKEN }}"}}'
         run: composer install --no-interaction --no-progress --prefer-dist
 
       - name: Code style (php-cs-fixer)
