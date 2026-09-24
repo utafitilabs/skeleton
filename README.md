@@ -265,9 +265,16 @@ php bin/console cache:warmup
 ```
 
 The third is what enters the module in the catalogue and gives every existing
-area its row; `doctrine:migrations:diff` must then report no changes, because a
-module ships its own versions. An administrator then switches the module on for
-the areas that want it from that area's module grid.
+area its row. A module ships its own versions, so the installation's own
+namespace must then have nothing to write — every package keeps its migrations
+under a namespace of its own, which is why the command names one:
+
+```bash
+php bin/console doctrine:migrations:diff --namespace=DoctrineMigrations   # No changes detected
+```
+
+An administrator then switches the module on for the areas that want it, from
+the area's Modules section under its Configure action.
 
 ### Official modules
 
