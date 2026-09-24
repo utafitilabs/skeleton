@@ -290,23 +290,11 @@ and per area — which a path rule could not express anyway.
 
 ## The front door
 
-`/` is the organisation's dashboard, mounted with the rest of the area screens by
-`config/routes/area.yaml`. An installation that wants a home page of its own
-mounts its route at `/` in `config/routes/` and takes that import out; nothing
-else refers to the dashboard's address. The settings section (`/settings`) and
-the favicon are mounted by `config/routes/shell.yaml`, and a page of your own
-extends one of the shell's frames and fills one block:
-
-```twig
-{# templates/home/index.html.twig #}
-{% extends '@Shell/page.html.twig' %}
-
-{% block shell_page_title %}Home{% endblock %}
-
-{% block shell_page %}
-    <p>The first page of a new installation.</p>
-{% endblock %}
-```
+`/` is the organisation's dashboard. What it shows is chosen on the dashboard
+itself: an administrator picks one of the shipped presets or arranges the
+widgets, per installation and per person, and nothing about it is configured in
+files. The settings section (`/settings`) and the favicon are mounted by
+`config/routes/shell.yaml`.
 
 ## Versions and branches
 
