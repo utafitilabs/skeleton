@@ -17,16 +17,6 @@
         }
     ],
     "prefer-stable": true,
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/utafitilabs/uhifadhi"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/utafitilabs/devkit-module"
-        }
-    ],
     "require": {
         "php": ">=8.4",
         "ext-ctype": "*",

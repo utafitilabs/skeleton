@@ -117,12 +117,8 @@ the order is the point.
 
 ## 1. Create the project
 
-Until the packages are listed on Packagist, `--repository` tells composer where
-to find `uhifadhi/skeleton`; it resolves the latest tag.
-
 ```bash
-composer create-project uhifadhi/skeleton park \
-  --repository='{"type":"vcs","url":"https://github.com/utafitilabs/skeleton"}'
+composer create-project uhifadhi/skeleton park
 cd park
 ```
 
@@ -134,11 +130,6 @@ bundle, `config/packages/` carries one commented file per core bundle plus
 `security.yaml`, and `config/routes/` mounts the screens. There is nothing to
 paste and no firewall to turn on. What there is not yet is a database.
 
-The project this creates carries its own `composer.json` with the `vcs` entries
-for the core and for devkit already in it, so a `composer require` run inside
-the project — step 4 and step 6 included — needs no flags of its own. Why those
-requirements are pinned at `@dev` is
-[below](#why-the-core-is-required-at-dev).
 
 ## 2. Give it a database
 
@@ -166,10 +157,16 @@ The core ships the versions that create its own tables, so there is nothing to
 generate: you run them.
 
 ```bash
+php bin/console cache:clear --no-warmup
 php bin/console doctrine:migrations:migrate
-php bin/console cache:clear
+php bin/console cache:warmup
 php bin/console asset-map:compile
 ```
+
+Clearing and warming are two commands on purpose. `cache:clear` on its own warms
+the new cache while the old one is still loaded, which with a few modules
+installed needs more than PHP's default 128 MB and dies half way; split, each
+half fits in the default.
 
 `migrations/` in this project stays **yours** — it is where
 `doctrine:migrations:diff` writes the versions for entities you write in
@@ -242,16 +239,15 @@ quick look.
 
 ## 6. Add modules
 
-A module is two `composer` lines and then the steps from section 3 again,
+A module is one `composer require` and then the steps from section 3 again,
 because a module adds its own tables and its own assets — and, like the core,
-ships the versions that create them. Until the modules are listed on Packagist,
-the first line tells composer where the module lives:
+ships the versions that create them:
 
 ```bash
-composer config repositories.patrol vcs https://github.com/utafitilabs/patrol-module
 composer require uhifadhi/patrol-module
+php bin/console cache:clear --no-warmup
 php bin/console doctrine:migrations:migrate
-php bin/console cache:clear
+php bin/console cache:warmup
 php bin/console asset-map:compile
 ```
 
@@ -262,15 +258,15 @@ for the areas that want it from that area's module grid.
 
 These are the modules the platform ships and keeps in step with the core.
 Install them in this order — a module that builds on another comes after it —
-each one with its two lines and the three commands above:
+each one with its line and the four commands above:
 
 | Module | What it adds | Lines |
 |---|---|---|
-| `uhifadhi/storage-module` | where evidence and photographs are kept; the modules below store through it | `composer config repositories.storage vcs https://github.com/utafitilabs/storage-module` · `composer require uhifadhi/storage-module` |
-| `uhifadhi/patrol-module` | patrols: planning, the handset's tracks and observations, maps, the calendar, exports | `composer config repositories.patrol vcs https://github.com/utafitilabs/patrol-module` · `composer require uhifadhi/patrol-module` |
-| `uhifadhi/incident-module` | incidents: the register, the board, area lists, evidence | `composer config repositories.incident vcs https://github.com/utafitilabs/incident-module` · `composer require uhifadhi/incident-module` |
-| `uhifadhi/roster-module` | duty: shifts, check-ins, who is on watch where | `composer config repositories.roster vcs https://github.com/utafitilabs/roster-module` · `composer require uhifadhi/roster-module` |
-| `uhifadhi/telemetry-module` | what the installation is doing: captures, crashes, server errors | `composer config repositories.telemetry vcs https://github.com/utafitilabs/telemetry-module` · `composer require uhifadhi/telemetry-module` |
+| `uhifadhi/storage-module` | where evidence and photographs are kept; the modules below store through it | `composer require uhifadhi/storage-module` |
+| `uhifadhi/patrol-module` | patrols: planning, the handset's tracks and observations, maps, the calendar, exports | `composer require uhifadhi/patrol-module` |
+| `uhifadhi/incident-module` | incidents: the register, the board, area lists, evidence | `composer require uhifadhi/incident-module` |
+| `uhifadhi/roster-module` | duty: shifts, check-ins, who is on watch where | `composer require uhifadhi/roster-module` |
+| `uhifadhi/telemetry-module` | what the installation is doing: captures, crashes, server errors | private, managed-hosting tier: `composer config repositories.telemetry vcs https://github.com/utafitilabs/telemetry-module` with an access token, then `composer require uhifadhi/telemetry-module`; its tables live in a database of their own, created by `php bin/console telemetry:migrate` in place of the migrate step |
 
 `uhifadhi/devkit-module` is not on this list on purpose: it is the
 development-only package from section 4, required with `--dev`, and a
@@ -326,11 +322,9 @@ tags on those branches as the releases. There is no `main`. `composer.json`
 requires the core with a caret (`^0.1`), which resolves to the latest tag on
 that line; the same goes for every module in the table above.
 
-The `vcs` entries beside those requirements are there because Composer reads
-`repositories` only from the root package and never from a dependency, so this
-file names the core's repository and devkit's itself, and step 6 names each
-module's. Once the packages are listed on Packagist the `vcs` entries come out;
-nothing else changes.
+Every public package of the fleet is listed on Packagist, so a plain
+`composer require` finds it. The one private module, telemetry, is the
+exception in the table above.
 
 ## Learn more
 

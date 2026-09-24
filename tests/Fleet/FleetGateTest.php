@@ -125,15 +125,13 @@ final class FleetGateTest extends TestCase
         // project gets each one's committed HEAD exported the way a tag is —
         // never a working tree, whose var/ and vendor/ would come along and
         // whose copied container would report itself fresh forever.
-        $repository = 'head' === self::$mode
-            ? ['type' => 'vcs', 'url' => $skeleton]
-            : ['type' => 'vcs', 'url' => 'https://github.com/utafitilabs/skeleton'];
-
-        self::shell([
-            'composer', 'create-project', 'uhifadhi/skeleton', self::$project,
-            '--stability=dev', '--repository='.json_encode($repository, \JSON_THROW_ON_ERROR),
-            '--no-interaction', '--no-progress',
-        ], \dirname(self::$project), 'README §1 create the project');
+        $command = ['composer', 'create-project', 'uhifadhi/skeleton', self::$project, '--no-interaction', '--no-progress'];
+        if ('head' === self::$mode) {
+            $command[] = '--stability=dev';
+            $command[] = '--repository='.json_encode(['type' => 'vcs', 'url' => $skeleton], \JSON_THROW_ON_ERROR);
+        }
+        // Released mode is the README's own line: Packagist, no flags.
+        self::shell($command, \dirname(self::$project), 'README §1 create the project');
 
         if ('head' === self::$mode) {
             // The sibling checkouts stand in for the published repositories:
@@ -157,7 +155,7 @@ final class FleetGateTest extends TestCase
             ?: 'postgresql://app:app@127.0.0.1:5434/fleet_gate?serverVersion=17&charset=utf8';
 
         self::freshDatabase($url);
-        file_put_contents($project.'/.env.local', 'DATABASE_URL="'.$url.'"'."\n");
+        file_put_contents($project.'/.env.local', 'DATABASE_URL="'.$url.'"'."\n".'TELEMETRY_DATABASE_URL="'.self::telemetryDatabaseUrl().'"'."\n");
 
         self::migrateAndCompile($project, 'README §3 core');
 
@@ -175,6 +173,8 @@ final class FleetGateTest extends TestCase
             ? 'uhifadhi/devkit-module:'.self::headVersion(self::workspace().'/devkit-module')
             : 'uhifadhi/devkit-module:^0.1';
         self::shell(['composer', 'require', '--dev', $devkit, '--no-interaction', '--no-progress'], $project, 'README §4 devkit');
+        self::shell(['php', 'bin/console', 'cache:clear', '--no-warmup'], $project, 'README §4 cache:clear --no-warmup');
+        self::shell(['php', 'bin/console', 'cache:warmup'], $project, 'README §4 cache:warmup');
         $out = self::shell([
             'php', 'bin/console', 'team:user:create', self::ADMIN_EMAIL, 'Ada', 'Mwangi',
             '--tier=super-admin', '--password='.self::ADMIN_PASSWORD, '--no-interaction',
@@ -206,11 +206,19 @@ final class FleetGateTest extends TestCase
                 self::pointAt($package, self::workspace().'/'.$module.'-module');
                 self::shell(['composer', 'require', $package.':'.self::headVersion(self::workspace().'/'.$module.'-module'), '--no-interaction', '--no-progress'], $project, $package.' require (head)');
             } else {
-                // The README's own two lines: name the repository, then require.
-                self::shell(['composer', 'config', 'repositories.'.$module, 'vcs', 'https://github.com/utafitilabs/'.$module.'-module'], $project, $package.' repository');
+                // The README's own line. Telemetry is private and names its repository first.
+                if ('telemetry' === $module) {
+                    self::shell(['composer', 'config', 'repositories.telemetry', 'vcs', 'https://github.com/utafitilabs/telemetry-module'], $project, $package.' repository');
+                }
                 self::shell(['composer', 'require', $package, '--no-interaction', '--no-progress'], $project, $package.' require');
             }
 
+            if ('telemetry' === $module) {
+                // Its tables live in a database of their own, created by its
+                // own command; the README's row says so.
+                self::freshDatabase(self::telemetryDatabaseUrl());
+                self::shell(['php', 'bin/console', 'telemetry:migrate', '--no-interaction'], $project, $package.' telemetry:migrate');
+            }
             self::migrateAndCompile($project, $package);
             self::shell(['composer', 'test'], $project, $package.' project smoke suite');
             self::restartServer($project);
@@ -224,8 +232,11 @@ final class FleetGateTest extends TestCase
 
     private static function migrateAndCompile(string $project, string $step): void
     {
+        // Four commands, the README's: clear and warm are split because a
+        // clear that warms in-process needs more than PHP's default 128 MB.
+        self::shell(['php', 'bin/console', 'cache:clear', '--no-warmup'], $project, $step.' cache:clear --no-warmup');
         self::shell(['php', 'bin/console', 'doctrine:migrations:migrate', '--no-interaction'], $project, $step.' migrate');
-        self::shell(['php', 'bin/console', 'cache:clear'], $project, $step.' cache:clear');
+        self::shell(['php', 'bin/console', 'cache:warmup'], $project, $step.' cache:warmup');
         self::shell(['php', 'bin/console', 'asset-map:compile'], $project, $step.' asset-map:compile');
         // The shipped migrations and the shipped entities must agree: a package
         // whose entity moved on without its migration is caught here.
@@ -306,6 +317,13 @@ final class FleetGateTest extends TestCase
         self::assertNotSame('HEAD', $branch, $checkout.' is on a detached HEAD; check out a branch');
 
         return preg_match('/^\d+\.\d+$/', $branch) ? $branch.'.x-dev' : 'dev-'.$branch;
+    }
+
+    /** The gate's own telemetry database, beside the application's. */
+    private static function telemetryDatabaseUrl(): string
+    {
+        return getenv('FLEET_GATE_TELEMETRY_DATABASE_URL')
+            ?: 'postgresql://app:app@127.0.0.1:5434/fleet_gate_telemetry?serverVersion=17&charset=utf8';
     }
 
     private static function workspace(): string
