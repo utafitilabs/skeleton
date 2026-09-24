@@ -80,6 +80,15 @@ final class FleetGateTest extends TestCase
      */
     public const array PRIVATE_MODULES = ['telemetry'];
 
+    /**
+     * WHAT EACH CAPABILITY MODULE MUST BE LISTED AS in the catalogue after its
+     * install. Storage and telemetry are infrastructure and declare no tile.
+     * This is the assertion that was missing when a freshly installed module
+     * sat in the packages but never reached the catalogue: everything else
+     * still booted, signed in and passed.
+     */
+    private const array CATALOGUE_SLUGS = ['patrol' => 'patrols', 'incident' => 'incidents', 'roster' => 'roster'];
+
     private const string ADMIN_EMAIL = 'gate@example.test';
     private const string ADMIN_PASSWORD = 'fleet-gate-passphrase';
 
@@ -219,6 +228,10 @@ final class FleetGateTest extends TestCase
                 self::shell(['php', 'bin/console', 'telemetry:migrate', '--no-interaction'], $project, $package.' telemetry:migrate');
             }
             self::migrateAndCompile($project, $package);
+            if (isset(self::CATALOGUE_SLUGS[$module])) {
+                $slugs = self::shell(['php', 'bin/console', 'dbal:run-sql', 'SELECT slug FROM module ORDER BY slug', '--no-interaction'], $project, $package.' catalogue');
+                self::assertMatchesRegularExpression('/\b'.preg_quote(self::CATALOGUE_SLUGS[$module], '/').'\b/', $slugs, $package.' must be in the catalogue after its install — the area\'s module grid reads nothing else');
+            }
             self::shell(['composer', 'test'], $project, $package.' project smoke suite');
             self::restartServer($project);
             self::signIn($package.' sign in');
