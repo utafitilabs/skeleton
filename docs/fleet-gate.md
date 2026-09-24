@@ -83,8 +83,8 @@ at the first failing step and names it.
    `cache:clear`, `asset-map:compile`; then `doctrine:schema:validate` twice,
    for the mapping and for the schema, so a package whose entities moved on
    without their migration is caught before anything is served.
-3. **README §4** — `composer require --dev uhifadhi/devkit-module`, then
-   `team:user:create` for the first administrator.
+3. **README §4** —
+   `team:user:create` for the first administrator; the command ships with the core.
 4. **README §5** — the project is served with PHP's built-in server and the
    administrator signs in over HTTP: the sign-in page answers, the form is
    submitted, the redirect is followed, and the page that lands names them.

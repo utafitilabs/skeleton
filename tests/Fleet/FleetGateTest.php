@@ -162,19 +162,10 @@ final class FleetGateTest extends TestCase
         return $project;
     }
 
-    /** README §4. */
+    /** README §4: the command ships with the core; no development package is needed. */
     #[Depends('testTheDatabaseIsMigrated')]
     public function testTheFirstAdministratorExists(string $project): string
     {
-        if ('head' === self::$mode) {
-            self::pointAt('uhifadhi/devkit-module', self::workspace().'/devkit-module');
-        }
-        $devkit = 'head' === self::$mode
-            ? 'uhifadhi/devkit-module:'.self::headVersion(self::workspace().'/devkit-module')
-            : 'uhifadhi/devkit-module:^0.1';
-        self::shell(['composer', 'require', '--dev', $devkit, '--no-interaction', '--no-progress'], $project, 'README §4 devkit');
-        self::shell(['php', 'bin/console', 'cache:clear', '--no-warmup'], $project, 'README §4 cache:clear --no-warmup');
-        self::shell(['php', 'bin/console', 'cache:warmup'], $project, 'README §4 cache:warmup');
         $out = self::shell([
             'php', 'bin/console', 'team:user:create', self::ADMIN_EMAIL, 'Ada', 'Mwangi',
             '--tier=super-admin', '--password='.self::ADMIN_PASSWORD, '--no-interaction',

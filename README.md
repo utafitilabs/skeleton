@@ -205,14 +205,10 @@ is installed when the cache is warmed.
 The firewall is on from the moment the project exists, and a fresh installation
 has no account to get through it. This step is how the first administrator comes
 to exist, and it runs **after** the migrations, because it writes to the table
-they just created.
-
-The command belongs to devkit, the development-only package that assembles every
-command the platform offers. Requiring it as a dev dependency is what makes the
-command exist; a production build never has it, and never has the command.
+they just created. The command ships with the core, so a production image has it
+too:
 
 ```bash
-composer require --dev "uhifadhi/devkit-module:^0.1"
 php bin/console team:user:create you@example.org Ada Mwangi --tier=super-admin
 ```
 
@@ -268,8 +264,9 @@ each one with its line and the three commands above:
 | `uhifadhi/telemetry-module` | what the installation is doing: captures, crashes, server errors | private, managed-hosting tier: `composer config repositories.telemetry vcs https://github.com/utafitilabs/telemetry-module` with an access token, then `composer require uhifadhi/telemetry-module`; its tables live in a database of their own, created by `php bin/console telemetry:migrate` in place of the migrate step |
 
 `uhifadhi/devkit-module` is not on this list on purpose: it is the
-development-only package from section 4, required with `--dev`, and a
-production build never carries it.
+development-only package — demo content and the commands that seed it — required
+with `composer require --dev uhifadhi/devkit-module` on a developer's machine,
+and a production build never carries it.
 
 ---
 
