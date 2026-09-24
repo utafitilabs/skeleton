@@ -37,6 +37,10 @@
                 "enabled": true,
                 "fetch": "lazy"
             },
+            "yes-no": {
+                "enabled": true,
+                "fetch": "lazy"
+            },
             "folds": {
                 "enabled": true,
                 "fetch": "lazy"
@@ -78,6 +82,10 @@
                 "fetch": "eager"
             },
             "module-order": {
+                "enabled": true,
+                "fetch": "eager"
+            },
+            "module-register": {
                 "enabled": true,
                 "fetch": "eager"
             },
