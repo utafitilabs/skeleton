@@ -195,7 +195,10 @@ superuser; a hosted database that withholds that has PostGIS turned on by the
 provider, and the core's first version then runs and does nothing.
 
 `asset-map:compile` is not optional: the compiled asset manifest is stale until
-you rebuild it, and stylesheets and scripts serve the old bytes until you do.
+you rebuild it, and stylesheets and scripts serve the old bytes until you do. It
+ends with a warning that debug mode will not serve changed assets while
+`public/assets` exists — expected: the compiled files are what production
+serves, and running the command again after a change is the way to refresh them.
 
 There is no catalogue command to run. The registry reconciles itself with what
 is installed when the cache is warmed.
