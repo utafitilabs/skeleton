@@ -206,22 +206,23 @@ The firewall is on from the moment the project exists, and a fresh installation
 has no account to get through it. This step is how the first administrator comes
 to exist, and it runs **after** the migrations, because it writes to the table
 they just created. The command ships with the core, so a production image has it
-too:
+too, and it asks for everything it needs — the address, the two names, the tier,
+and last the passphrase, which is never echoed:
 
 ```bash
-php bin/console team:user:create you@example.org Ada Mwangi --tier=super-admin
-```
-
-Leave `--password=` off and the passphrase is read from standard input, so it
-need never reach a shell history or a process list:
-
-```bash
-printf '%s' "$PASSPHRASE" | php bin/console team:user:create you@example.org Ada Mwangi
+php bin/console team:user:create
 ```
 
 The tier defaults to `super-admin`, which is what this account is for: the first
 administrator of an installation with nobody else in it. `--tier=admin` and
 `--tier=staff` make lesser accounts once somebody can sign in.
+
+For a script, everything can be given on the line, with the passphrase read from
+standard input so it never reaches a shell history or a process list:
+
+```bash
+printf '%s' "$PASSPHRASE" | php bin/console team:user:create you@example.org Ada Mwangi --tier=super-admin
+```
 
 ## 5. Serve it
 
