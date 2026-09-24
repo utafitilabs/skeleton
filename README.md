@@ -321,9 +321,9 @@ tags on those branches as the releases. There is no `main`. `composer.json`
 requires the core with a caret (`^0.1`), which resolves to the latest tag on
 that line; the same goes for every module in the table above.
 
-Every public package of the fleet is listed on Packagist, so a plain
-`composer require` finds it. The one private module, telemetry, is the
-exception in the table above.
+Every package of the fleet is listed on Packagist, so a plain
+`composer require` finds it. Telemetry, the managed-hosting tier's module, is
+private and not part of an installation's own list.
 
 ## Learn more
 
