@@ -118,11 +118,11 @@ the order is the point.
 ## 1. Create the project
 
 ```bash
-composer create-project uhifadhi/skeleton park
-cd park
+composer create-project uhifadhi/skeleton uca
+cd uca
 ```
 
-Use any name you like in place of `park`; it becomes the directory and, in the
+Use any name you like in place of `uca`; it becomes the directory and, in the
 next step, the local hostname and the database name.
 
 That installs the core and wires it up: `config/bundles.php` already names every
