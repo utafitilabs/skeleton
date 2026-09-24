@@ -232,12 +232,14 @@ final class FleetGateTest extends TestCase
 
     private static function migrateAndCompile(string $project, string $step): void
     {
-        // Four commands, the README's: clear and warm are split because a
+        // The README's three commands: clear and warm are split because a
         // clear that warms in-process needs more than PHP's default 128 MB.
         self::shell(['php', 'bin/console', 'cache:clear', '--no-warmup'], $project, $step.' cache:clear --no-warmup');
         self::shell(['php', 'bin/console', 'doctrine:migrations:migrate', '--no-interaction'], $project, $step.' migrate');
         self::shell(['php', 'bin/console', 'cache:warmup'], $project, $step.' cache:warmup');
-        self::shell(['php', 'bin/console', 'asset-map:compile'], $project, $step.' asset-map:compile');
+        // Not one of the README's commands: the production image runs it when it
+        // is built. The gate runs it here to prove the build step still works.
+        self::shell(['php', 'bin/console', 'asset-map:compile'], $project, $step.' asset-map:compile (the image\'s build step)');
         // The shipped migrations and the shipped entities must agree: a package
         // whose entity moved on without its migration is caught here.
         self::shell(['php', 'bin/console', 'doctrine:schema:validate', '--skip-sync', '--no-interaction'], $project, $step.' mapping valid');

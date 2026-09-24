@@ -160,7 +160,6 @@ generate: you run them.
 php bin/console cache:clear --no-warmup
 php bin/console doctrine:migrations:migrate
 php bin/console cache:warmup
-php bin/console asset-map:compile
 ```
 
 Clearing and warming are two commands on purpose. `cache:clear` on its own warms
@@ -194,11 +193,9 @@ database refuses it. PostGIS is not a trusted extension, so enabling it wants a
 superuser; a hosted database that withholds that has PostGIS turned on by the
 provider, and the core's first version then runs and does nothing.
 
-`asset-map:compile` is not optional: the compiled asset manifest is stale until
-you rebuild it, and stylesheets and scripts serve the old bytes until you do. It
-ends with a warning that debug mode will not serve changed assets while
-`public/assets` exists — expected: the compiled files are what production
-serves, and running the command again after a change is the way to refresh them.
+There is no asset step here. In development AssetMapper serves every stylesheet
+and script straight from its source; compiling them (`asset-map:compile`) is a
+build step, and the production `Dockerfile` runs it when the image is built.
 
 There is no catalogue command to run. The registry reconciles itself with what
 is installed when the cache is warmed.
@@ -251,7 +248,6 @@ composer require uhifadhi/patrol-module
 php bin/console cache:clear --no-warmup
 php bin/console doctrine:migrations:migrate
 php bin/console cache:warmup
-php bin/console asset-map:compile
 ```
 
 The module then appears in the catalogue, and an administrator switches it on
@@ -261,7 +257,7 @@ for the areas that want it from that area's module grid.
 
 These are the modules the platform ships and keeps in step with the core.
 Install them in this order — a module that builds on another comes after it —
-each one with its line and the four commands above:
+each one with its line and the three commands above:
 
 | Module | What it adds | Lines |
 |---|---|---|
