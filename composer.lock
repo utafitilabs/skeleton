@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3fb1148dbdc22d2a9f96139662d5cb0f",
+    "content-hash": "47671afc5a39adfec517f05138cd0036",
     "packages": [
         {
             "name": "api-platform/core",
@@ -7256,52 +7256,17 @@
             "autoload": {
                 "psr-4": {
                     "Uhifadhi\\Bundle\\": "src/Uhifadhi/Bundle/",
+                    "Uhifadhi\\Contracts\\": "src/Uhifadhi/Contracts/",
                     "Uhifadhi\\Bundle\\AreaBundle\\Migrations\\": "src/Uhifadhi/Bundle/AreaBundle/migrations/",
-                    "Uhifadhi\\Bundle\\RegistryBundle\\Migrations\\": "src/Uhifadhi/Bundle/RegistryBundle/migrations/",
-                    "Uhifadhi\\Bundle\\ShellBundle\\Migrations\\": "src/Uhifadhi/Bundle/ShellBundle/migrations/",
                     "Uhifadhi\\Bundle\\TeamBundle\\Migrations\\": "src/Uhifadhi/Bundle/TeamBundle/migrations/",
-                    "Uhifadhi\\Contracts\\": "src/Uhifadhi/Contracts/"
+                    "Uhifadhi\\Bundle\\ShellBundle\\Migrations\\": "src/Uhifadhi/Bundle/ShellBundle/migrations/",
+                    "Uhifadhi\\Bundle\\RegistryBundle\\Migrations\\": "src/Uhifadhi/Bundle/RegistryBundle/migrations/"
                 },
                 "exclude-from-classmap": [
                     "**/tests/"
                 ]
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Uhifadhi\\Bundle\\AreaBundle\\Tests\\": "src/Uhifadhi/Bundle/AreaBundle/tests/",
-                    "Uhifadhi\\Bundle\\AtlasBundle\\Tests\\": "src/Uhifadhi/Bundle/AtlasBundle/tests/",
-                    "Uhifadhi\\Bundle\\RegistryBundle\\Tests\\": "src/Uhifadhi/Bundle/RegistryBundle/tests/",
-                    "Uhifadhi\\Bundle\\ShellBundle\\Tests\\": "src/Uhifadhi/Bundle/ShellBundle/tests/",
-                    "Uhifadhi\\Bundle\\TeamBundle\\Tests\\": "src/Uhifadhi/Bundle/TeamBundle/tests/",
-                    "Uhifadhi\\Contracts\\Tests\\": "src/Uhifadhi/Contracts/tests/",
-                    "Uhifadhi\\Core\\Tests\\": "tests/",
-                    "Uhifadhi\\Core\\Tests\\Core\\Fixtures\\Migrations\\": "tests/Core/Fixtures/migrations/",
-                    "Uhifadhi\\Entity\\": "src/Uhifadhi/Bundle/RegistryBundle/tests/Integration/Fixtures/Uhifadhi/Entity/"
-                }
-            },
-            "scripts": {
-                "cs:fix": [
-                    "php-cs-fixer fix"
-                ],
-                "cs:check": [
-                    "php-cs-fixer fix --dry-run --diff"
-                ],
-                "phpstan": [
-                    "phpstan analyse --no-progress --memory-limit=1G"
-                ],
-                "test": [
-                    "phpunit"
-                ],
-                "require-check": [
-                    "@php require-check"
-                ],
-                "check": [
-                    "@cs:check",
-                    "@phpstan",
-                    "@require-check",
-                    "@test"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "AGPL-3.0-or-later"
             ],
@@ -7313,7 +7278,7 @@
             ],
             "description": "The uhifadhi core: the registry, the shell and the atlas, shipped as one package and one version.",
             "keywords": [
-                "conservation",
+                "Conservation",
                 "core",
                 "platform",
                 "registry",
@@ -7323,8 +7288,8 @@
                 "uhifadhi"
             ],
             "support": {
-                "source": "https://github.com/utafitilabs/uhifadhi/tree/v0.1.0",
-                "issues": "https://github.com/utafitilabs/uhifadhi/issues"
+                "issues": "https://github.com/utafitilabs/uhifadhi/issues",
+                "source": "https://github.com/utafitilabs/uhifadhi/tree/v0.1.0"
             },
             "time": "2026-09-24T08:49:02+00:00"
         },
