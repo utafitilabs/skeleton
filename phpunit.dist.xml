@@ -14,6 +14,12 @@
         <server name="APP_ENV" value="test" force="true"/>
         <server name="SHELL_VERBOSITY" value="-1"/>
     </php>
+    <!-- `defaultTestSuite` on <phpunit> and <exclude> inside a <testsuite> are
+         both in the schema this file declares above:
+           <xs:attribute name="defaultTestSuite" type="xs:string" default=""/>
+           <xs:element name="exclude" type="xs:string"/>  (in testSuiteType)
+         @see vendor/phpunit/phpunit/phpunit.xsd
+         @see https://docs.phpunit.de/en/13.3/configuration.html#the-testsuite-element -->
     <testsuites>
         <testsuite name="default">
             <directory>tests</directory>

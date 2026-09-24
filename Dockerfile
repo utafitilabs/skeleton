@@ -49,7 +49,20 @@ COPY . .
 # 3) Optimise the autoloader and build the assets. No secrets and no database are
 #    needed for either: importmap:install fetches the vendor JavaScript because
 #    assets/vendor is not committed; asset-map:compile writes public/assets, which
-#    is not committed either.
+#    is not committed either. THE ORDER IS THE DOCUMENTED ONE — compile can only
+#    write what install has fetched:
+#      "All packages in importmap.php are downloaded into an assets/vendor/
+#       directory, which should be ignored by git (the Flex recipe adds it to
+#       .gitignore for you). You'll need to run the following command to
+#       download the files on other computers if some are missing:
+#       php bin/console importmap:install"
+#      "In the dev environment, the URL /assets/images/duck-3c16d92m.png is
+#       handled and returned by your Symfony app. For the prod environment,
+#       before deploy, you'll run a command to write the final versioned files
+#       into public/assets/ so that they're served directly by your web server."
+#    which is why dev serves from source and only the image compiles.
+#    @see https://symfony.com/doc/current/frontend/asset_mapper.html#deploying
+#    @see vendor/symfony/asset-mapper/Command/AssetMapperCompileCommand.php
 RUN composer dump-autoload --no-dev --optimize --classmap-authoritative \
     && php bin/console importmap:install \
     && php bin/console asset-map:compile \

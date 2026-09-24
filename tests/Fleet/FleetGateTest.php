@@ -54,6 +54,64 @@ use Symfony\Component\Process\Process;
  *   FLEET_GATE_WORKSPACE      head mode: the directory holding the sibling
  *                             checkouts (default: this checkout's parent)
  *   FLEET_GATE_KEEP           set to keep the project directory for a look
+ *
+ * WHAT DECIDES THE COMPOSER AND BROWSER MECHANISMS BELOW — docs first, then the
+ * tool's own source where the docs stop short:
+ *
+ *   create-project --repository / --add-repository
+ *     "Provide a custom repository to search for the package, which will be
+ *      used instead of packagist."
+ *     "Add the custom repository in the composer.json. If a lock file is
+ *      present, it will be deleted and an update will be run instead of an
+ *      install."
+ *
+ *     @see https://getcomposer.org/doc/03-cli.md#create-project
+ *     @see composer/src/Composer/Command/CreateProjectCommand.php —
+ *          `if (null === $repositories) { …defaultRepos… } else { …only these… }`
+ *          and the composer.json is written ONLY under `$addRepository`. So
+ *          `--repository` finds the ROOT package and nothing more: every later
+ *          `composer require` needs its own repository, which is what
+ *          {@see pointAt()} writes.
+ *
+ *   create-project --stability
+ *     "Minimum stability of package. Defaults to `stable`."
+ *     @see https://getcomposer.org/doc/03-cli.md#create-project
+ *     @see composer/src/Composer/Command/CreateProjectCommand.php —
+ *          `new RepositorySet($stability)`; it bounds the ROOT package's
+ *          candidates and is never written into the created project.
+ *
+ *   composer config repositories.<name> vcs <url>
+ *     "php composer.phar config repositories.foo vcs https://github.com/foo/bar"
+ *     @see https://getcomposer.org/doc/03-cli.md#config
+ *
+ *   a version-line branch as a version, and requiring it under a stable floor
+ *     "you must specify a version constraint that looks like this: `v1.x-dev`.
+ *      The `.x` is an arbitrary string that Composer requires to tell it that
+ *      we're talking about the `v1` branch and not a `v1` tag"
+ *     @see https://getcomposer.org/doc/articles/versions.md#branches
+ *     @see composer/vendor/composer/semver/src/VersionParser.php —
+ *          normalizeBranch(); no `extra.branch-alias` is involved.
+ *     @see composer/src/Composer/Package/Loader/RootPackageLoader.php —
+ *          extractStabilityFlags(): a constraint whose own stability is not
+ *          stable sets that package's stability flag, so `0.1.x-dev` installs
+ *          under `minimum-stability: stable` with no `@dev` and no edit to the
+ *          project's floor.
+ *
+ *   HttpBrowser
+ *     @see https://symfony.com/doc/current/components/browser_kit.html
+ *     @see vendor/symfony/browser-kit/AbstractBrowser.php —
+ *          `protected bool $followRedirects = true;`, so `submit($form)` lands
+ *          on the page the redirect points at and absolute URIs are what a real
+ *          HTTP client takes.
+ *
+ *   doctrine:schema:validate --skip-sync / --skip-mapping
+ *     @see vendor/doctrine/orm/src/Tools/Console/Command/ValidateSchemaCommand.php —
+ *          "Skip checking if the mapping is in sync with the database" /
+ *          "Skip the mapping validation check": the two runs below ask the two
+ *          questions separately on purpose.
+ *
+ *   asset-map:compile
+ *     @see https://symfony.com/doc/current/frontend/asset_mapper.html#deploying
  */
 final class FleetGateTest extends TestCase
 {
@@ -364,6 +422,30 @@ final class FleetGateTest extends TestCase
     {
         self::$baseUrl = 'http://127.0.0.1:'.self::freePort();
         self::$server = new Process(['php', '-S', substr(self::$baseUrl, 7), '-t', 'public'], $project);
+        // NOBODY READS THIS SERVER'S OUTPUT, SO IT MUST NOT HAVE ANY. Process
+        // always fetches a child's stdout and stderr into pipes, and it drains
+        // them only when the parent asks after the process — which this gate
+        // never does for the server: it starts it and then talks HTTP to it.
+        // The dev-mode server logs several lines per request, the pipe fills,
+        // the server blocks on write, and the next request waits on a client
+        // timeout instead of an answer.
+        //
+        //   "As standard output and error output are always fetched from the
+        //    underlying process, it might be convenient to disable output in
+        //    some cases to save memory. Use disableOutput()"
+        //   @see https://symfony.com/doc/current/components/process.html#disabling-output
+        //   @see vendor/symfony/process/Process.php — buildDescriptors():
+        //        `new UnixPipes($this->isTty(), $this->isPty(), $this->input, !$this->outputDisabled || $hasCallback)`
+        //   @see vendor/symfony/process/Pipes/UnixPipes.php — getDescriptors():
+        //        with no read support the child is handed `/dev/null`, not a pipe
+        //   @see vendor/symfony/process/Process.php — updateStatus(), the only
+        //        place readPipes() is called from
+        //
+        // And the timeout is lifted, because a Process is 60 s by default
+        //   "?float $timeout = 60"  @see vendor/symfony/process/Process.php — __construct()
+        // while this one is meant to outlive every module's install.
+        self::$server->setTimeout(null);
+        self::$server->disableOutput();
         self::$server->start();
 
         $deadline = microtime(true) + 15;
