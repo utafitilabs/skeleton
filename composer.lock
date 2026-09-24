@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2cd27b87f3d0921f44a3279926e6961e",
+    "content-hash": "3fb1148dbdc22d2a9f96139662d5cb0f",
     "packages": [
         {
             "name": "api-platform/core",
@@ -7184,16 +7184,16 @@
         },
         {
             "name": "uhifadhi/uhifadhi",
-            "version": "dev-main",
+            "version": "v0.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/utafitilabs/uhifadhi.git",
-                "reference": "9cc882424b88a6aaea5207058d483257f79bd1e0"
+                "reference": "1186f355986f095ee6c1dcb772def9df720222e3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/utafitilabs/uhifadhi/zipball/9cc882424b88a6aaea5207058d483257f79bd1e0",
-                "reference": "9cc882424b88a6aaea5207058d483257f79bd1e0",
+                "url": "https://api.github.com/repos/utafitilabs/uhifadhi/zipball/1186f355986f095ee6c1dcb772def9df720222e3",
+                "reference": "1186f355986f095ee6c1dcb772def9df720222e3",
                 "shasum": ""
             },
             "require": {
@@ -7252,13 +7252,7 @@
                 "symfony/css-selector": "^7.3 || ^8.0",
                 "symfony/dom-crawler": "^7.3 || ^8.0"
             },
-            "default-branch": true,
             "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-main": "1.0-dev"
-                }
-            },
             "autoload": {
                 "psr-4": {
                     "Uhifadhi\\Bundle\\": "src/Uhifadhi/Bundle/",
@@ -7329,10 +7323,10 @@
                 "uhifadhi"
             ],
             "support": {
-                "source": "https://github.com/utafitilabs/uhifadhi/tree/main",
+                "source": "https://github.com/utafitilabs/uhifadhi/tree/v0.1.0",
                 "issues": "https://github.com/utafitilabs/uhifadhi/issues"
             },
-            "time": "2026-09-22T09:10:30+00:00"
+            "time": "2026-09-24T08:49:02+00:00"
         },
         {
             "name": "utafitilabs/postgis-bundle",
@@ -10669,9 +10663,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "uhifadhi/uhifadhi": 20
-    },
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
