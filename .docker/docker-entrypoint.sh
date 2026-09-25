@@ -42,8 +42,17 @@ if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
 
     # The schema first, then the catalogue: registry:sync reads tables the
     # migrations create, and refuses before they exist.
-    php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing
-    php bin/console registry:sync --no-interaction
+    #
+    # ONLY THE WEB SERVER'S START DOES THIS. The same image also runs the queue
+    # worker (`php bin/console messenger:consume …`, the worker role in
+    # config/deploy.yml), and two containers migrating at once race each other
+    # into duplicate tables. The worker needs no step of its own: Kamal boots
+    # the primary role first and one role after another, so the web container
+    # has migrated and answered its health check before a worker starts.
+    if [ "$1" = 'frankenphp' ]; then
+        php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing
+        php bin/console registry:sync --no-interaction
+    fi
 fi
 
 # Hand off to the PHP base image entrypoint, which execs the CMD (frankenphp run …).
