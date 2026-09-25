@@ -29,7 +29,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # @see https://github.com/dunglas/symfony-docker/blob/main/Dockerfile
 RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 ENV PHP_INI_SCAN_DIR=":$PHP_INI_DIR/app.conf.d"
-COPY .docker/conf.d/10-app.ini .docker/conf.d/30-uploads.ini $PHP_INI_DIR/app.conf.d/
+COPY .docker/conf.d/10-app.ini .docker/conf.d/30-uploads.ini .docker/conf.d/40-requests.ini $PHP_INI_DIR/app.conf.d/
 
 ENV APP_ENV=prod \
     APP_DEBUG=0 \
