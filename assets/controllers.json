@@ -41,10 +41,6 @@
                 "enabled": true,
                 "fetch": "lazy"
             },
-            "rank-order": {
-                "enabled": true,
-                "fetch": "lazy"
-            },
             "folds": {
                 "enabled": true,
                 "fetch": "lazy"
