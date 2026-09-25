@@ -21,3 +21,10 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    # The default schedule keeps its state and lock in the database, on the
+    # registry's pool and lock factory rather than the filesystem cache.
+    App\Schedule:
+        arguments:
+            $state: '@registry.schedule.state'
+            $locks: '@registry.schedule.lock_factory'
