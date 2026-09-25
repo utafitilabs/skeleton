@@ -20,7 +20,8 @@ installed with composer.
   - [3. Run the migrations](#3-run-the-migrations)
   - [4. Create the first administrator](#4-create-the-first-administrator)
   - [5. Serve it](#5-serve-it)
-  - [6. Add modules](#6-add-modules)
+  - [6. Run the worker](#6-run-the-worker)
+  - [7. Add modules](#7-add-modules)
 - [What is behind sign-in](#what-is-behind-sign-in)
 - [The front door](#the-front-door)
 - [Versions and branches](#versions-and-branches)
@@ -111,7 +112,11 @@ Deployment is a standard Symfony application. This repository ships a production
 containers, next to any PostGIS database. The image warms the cache when it is
 built, through this project's own Composer auto-scripts, so a warm-up that does
 not fit fails the build; the container's entrypoint waits for the database,
-migrates and syncs the catalogue, and does nothing else.
+migrates and syncs the catalogue, and does nothing else. The same image runs
+the queue worker (`php bin/console messenger:consume …`); that start waits for
+the database and leaves migrating to the web server's. A web request runs for at
+most 30 seconds (`max_execution_time`, `.docker/conf.d/40-requests.ini`), above
+the core's database statement timeout.
 
 ## Requirements
 
@@ -250,7 +255,34 @@ Open the address it prints and sign in as the administrator from step 4.
 Without the Symfony CLI, `php -S 127.0.0.1:8000 -t public` serves it for a
 quick look.
 
-## 6. Add modules
+## 6. Run the worker
+
+Work a page hands over — and the `default` schedule's recurring tasks — runs in
+the queue worker, one long-running console command:
+
+```bash
+php bin/console messenger:consume async scheduler_default -vv
+```
+
+Until it runs, handed-over work waits in the database and nothing is lost. With
+[fundi](https://github.com/utafitilabs/fundi-cli) serving the project, declare
+it once in `.fundi.local.yaml` and `fundi server:start` runs it next to the web
+server and starts it again when it stops:
+
+```yaml
+workers:
+    queue:
+        cmd: [php, bin/console, messenger:consume, async, scheduler_default, --time-limit=3600, --memory-limit=256M]
+```
+
+In production the worker is a role of the deployment on the same image: with
+fundi, a `deploy.workers` entry in the same file, which `fundi deploy:init`
+writes into `config/deploy.yml`. After a deploy, the worker is a new container
+running the new code; anywhere else, run `php bin/console messenger:stop-workers`
+after the code changes, so a worker finishes its message and is started again on
+it.
+
+## 7. Add modules
 
 Installing a module is `composer require uhifadhi/<name>-module`, then the same
 four lines as any upgrade, because a module adds its own tables and its own
