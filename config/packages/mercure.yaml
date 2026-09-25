@@ -1,0 +1,16 @@
+# The hub the live plates move over. It sits inside the application's own
+# server and is reached at the two addresses below; the deployment sets them,
+# and until it does both are EMPTY, which the platform reads as "no hub":
+# every page answers, no subscriber cookie is set, every plate is drawn once.
+#
+# Read WITHOUT the `default:` processor on purpose: `%env(default::VAR)%`
+# turns an empty variable into null, and the hub's constructor takes a string,
+# so an installation with no hub yet would fail on every page.
+mercure:
+    hubs:
+        default:
+            url: '%env(MERCURE_URL)%'
+            public_url: '%env(MERCURE_PUBLIC_URL)%'
+            jwt:
+                secret: '%env(MERCURE_JWT_SECRET)%'
+                publish: '*'
