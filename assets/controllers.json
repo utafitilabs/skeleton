@@ -104,10 +104,6 @@
             "reorder": {
                 "enabled": true,
                 "fetch": "eager"
-            },
-            "copy": {
-                "enabled": true,
-                "fetch": "lazy"
             }
         }
     },
