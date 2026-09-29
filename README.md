@@ -155,7 +155,7 @@ paste and no firewall to turn on. What there is not yet is a database.
 ## 2. Start the services
 
 ```bash
-docker compose up -d
+docker compose up -d --wait
 ```
 
 That starts three containers, defined in `compose.yaml` and
@@ -171,8 +171,14 @@ Each is published on a free port of the machine, and the Symfony CLI reads those
 ports from Docker: run every command through it — `symfony console …` rather
 than `php bin/console …` — and `DATABASE_URL`, `MERCURE_URL`,
 `MERCURE_PUBLIC_URL` and `MAILER_DSN` are set for you, with nothing written into
-`.env`. `symfony var:export --multiline` prints what it found, and
-`docker compose port mailer 8025` names the address where Mailpit shows the mail.
+`.env`. `docker compose port mailer 8025` names the address where Mailpit shows
+the mail.
+
+`--wait` returns once every service is healthy, and names the one that is not:
+without it, a database that stops a second after starting (a full Docker disk,
+say) goes unnoticed, and the next step quietly reaches for `127.0.0.1:5432`
+from `.env` instead — on a machine that runs a PostgreSQL of its own, a
+different database.
 
 `docker compose down` stops them and keeps the data; `docker compose down -v`
 deletes the database too.
@@ -186,7 +192,14 @@ empty in `.env`, every page answers, and every live plate is drawn once.
 ## 3. Run the migrations
 
 The core ships the versions that create its own tables, so there is nothing to
-generate: you run them.
+generate: you run them. First check that the Symfony CLI found the services: its
+`DATABASE_URL` must name the port Docker published, never `5432`:
+
+```bash
+symfony var:export --multiline
+```
+
+Then:
 
 ```bash
 symfony console cache:clear --no-warmup
@@ -270,31 +283,33 @@ authority, `http://127.0.0.1:8000` before — and sign in as the administrator
 from step 4. The Mercure hub accepts subscriptions from exactly those two
 addresses (`cors_origins` in `compose.yaml`); serve on another and add it there.
 
+The same command starts the workers `.symfony.local.yaml` declares — the
+services of step 2 and the queue worker of step 6 — and `symfony server:status`
+lists them. `symfony server:stop` stops them all.
+
 Served any other way — `php -S 127.0.0.1:8000 -t public`, say — the project
 reads only `.env` and `.env.local`, so write the four addresses from
 `symfony var:export --multiline` into `.env.local` first.
 
 ## 6. Run the worker
 
-Work a page hands over — and the `default` schedule's recurring tasks — runs in
-the queue worker, one long-running console command:
+An installation needs one worker: the queue worker, consuming two transports.
+
+| Transport | What runs on it |
+|---|---|
+| `async` | work a request hands over instead of doing: every message that implements the core's queue marker, `Uhifadhi\Contracts\Queue\AsyncMessageInterface` — filling a module's history once it is switched on, for one |
+| `scheduler_default` | the recurring tasks of the `default` schedule: the core recomputes the figures of the periods still open, hourly from 06:00 to 20:00 and once at 02:00, and an installed module adds its own |
 
 ```bash
 symfony console messenger:consume async scheduler_default -vv
 ```
 
-Until it runs, handed-over work waits in the database and nothing is lost. To
-have the Symfony CLI run it beside the web server, and start it again when the
-code changes, declare it in `.symfony.local.yaml`; `docker_compose: ~` has the
-same server start the services of step 2:
-
-```yaml
-workers:
-    docker_compose: ~
-    messenger_consume:
-        cmd: ['symfony', 'console', 'messenger:consume', 'async', 'scheduler_default', '--time-limit=3600', '--memory-limit=256M']
-        watch: ['config', 'src', 'templates', 'vendor/composer/installed.json']
-```
+`.symfony.local.yaml` already declares it, so under `symfony server:start` it
+runs beside the web server and is started again when the code or the installed
+packages change. Until it runs, handed-over work waits in the database — `async`
+and `failed` are queues in the `messenger_messages` table, on
+`MESSENGER_TRANSPORT_DSN` — and nothing is lost; a message that fails every
+retry lands in `failed`, where `symfony console messenger:failed:show` lists it.
 
 Wherever the project is hosted, the worker is a process kept running beside the
 web server. After the code changes, `php bin/console messenger:stop-workers`

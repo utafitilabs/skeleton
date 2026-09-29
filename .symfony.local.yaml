@@ -1,0 +1,14 @@
+# What `symfony server:start` runs beside the web server, so one command brings
+# up everything a working installation needs on a development machine.
+# https://symfony.com/doc/current/setup/symfony_cli.html (Configuring Workers)
+workers:
+    # The services of compose.yaml — PostgreSQL with PostGIS, the Mercure hub,
+    # the mail catcher — started with the server.
+    docker_compose: ~
+
+    # The queue worker: the work a request hands over (`async`) and the
+    # recurring tasks of the `default` schedule (`scheduler_default`). Started
+    # again whenever the code or the installed packages change.
+    messenger_consume:
+        cmd: ['symfony', 'console', 'messenger:consume', 'async', 'scheduler_default', '--time-limit=3600', '--memory-limit=256M']
+        watch: ['config', 'src', 'templates', 'vendor/composer/installed.json']

@@ -101,6 +101,11 @@ jobs:
           symfony console registry:sync --no-interaction
           symfony console cache:warmup
 
+      - name: 6. The queue worker's transports exist
+        run: |
+          RECEIVERS="$(symfony console debug:container --tag=messenger.receiver)"
+          for t in async failed scheduler_default; do grep -qw "$t" <<<"$RECEIVERS" || { echo "no $t transport"; exit 1; }; done
+
       - name: 4. Create the first administrator
         run: |
           PASSPHRASE="$(openssl rand -base64 24)"

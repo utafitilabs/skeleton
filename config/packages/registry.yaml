@@ -2,7 +2,7 @@
 # catalogue of what this installation has, the record of what each area
 # switched on, and the permissions modules declare.
 #
-# NOTHING BELOW IS REQUIRED. Both keys have defaults and the tree is closed, so
+# NOTHING BELOW IS REQUIRED. Every key has a default and the tree is closed, so
 # an unknown key fails loudly rather than being ignored.
 #
 # THERE IS DELIBERATELY NO KEY LISTING MODULES. Installing a module IS the
@@ -15,12 +15,73 @@ registry:
     # by somebody else can never break the catalogue with a typo.
     default_category: operations
 
+    # The longest one SQL statement of a WEB REQUEST may run, in milliseconds,
+    # before PostgreSQL cancels it; 0 is no limit. Every connection opened
+    # under a web server API runs `SET statement_timeout` first; bin/console,
+    # the migrations and the queue worker never do. Keep the image's
+    # max_execution_time above it, so PHP is still there to report the
+    # cancelled statement. The typed env form an integer key takes:
+    # https://symfony.com/doc/current/configuration/env_var_processors.html
+    # https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-STATEMENT-TIMEOUT
+    statement_timeout_ms: '%env(int:DATABASE_STATEMENT_TIMEOUT_MS)%'
+
+# The queue the registry's work runs on: work a request hands over instead of
+# doing, run by the worker (`php bin/console messenger:consume async
+# scheduler_default`). Framework configuration from several files merges, so an
+# installation's own config/packages/messenger.yaml — the one symfony/messenger's
+# recipe writes — and this block make one `framework.messenger`.
+# https://symfony.com/doc/current/configuration.html#configuration-files
+#
+# ONE TRANSPORT, IN THE DATABASE. MESSENGER_TRANSPORT_DSN is the Doctrine
+# transport on the installation's own connection — the line symfony/messenger's
+# recipe writes into .env, `doctrine://default?auto_setup=0`. Both queues are
+# names in the one messenger_messages table, which the registry's migration
+# creates (auto_setup=0: the schema is the migrations', never a request's). On
+# PostgreSQL the transport notifies a waiting worker when a message lands.
+# https://symfony.com/doc/current/messenger.html#doctrine-transport
+#
+# WHAT GOES ON IT is decided by the core: every message class that implements
+# the core's queue marker is sent to `async`, because "You can also route
+# classes by their parent class or interface."
+# https://symfony.com/doc/current/messenger.html#routing-messages-to-a-transport
+# (vendor/symfony/messenger/Transport/Sender/SendersLocator.php)
+framework:
+    messenger:
+        # A message that has used up its retries is kept, not dropped —
+        # `messenger:failed:show` lists them, `messenger:failed:retry` runs
+        # them again. The default retry strategy stays: three retries, one
+        # second apart and doubling.
+        # https://symfony.com/doc/current/messenger.html#saving-retrying-failed-messages
+        failure_transport: failed
+
+        transports:
+            async:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    queue_name: async
+            failed:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    queue_name: failed
+
+        routing:
+            'Uhifadhi\Contracts\Queue\AsyncMessageInterface': async
+
 # Dev-only tooling hangs off this flag, so a production installation never grows
 # machinery that writes invented catalogue rows.
 when@dev:
     registry:
         dev_tools: true
 
+# Tests also send to memory, so a test can assert what was queued and nothing
+# waits on a table: "Use in-memory:// in functional tests to verify correct
+# message dispatch to transports".
+# https://symfony.com/doc/current/messenger.html#in-memory-transport
 when@test:
     registry:
         dev_tools: true
+    framework:
+        messenger:
+            transports:
+                async: 'in-memory://'
+                failed: 'in-memory://'
