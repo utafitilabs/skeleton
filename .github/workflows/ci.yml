@@ -60,3 +60,64 @@ jobs:
 
       - name: Smoke test (PHPUnit)
         run: composer test
+
+  # The install guide, run as written: `docker compose up -d` for the services,
+  # the Symfony CLI for everything else. On both architectures a developer
+  # machine has, so a service image that exists for one only fails here first.
+  services:
+    name: Install guide on ${{ matrix.runner }}
+    runs-on: ${{ matrix.runner }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: ['ubuntu-latest', 'ubuntu-24.04-arm']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP and the Symfony CLI
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: ctype, iconv, intl, pdo_pgsql
+          coverage: none
+          tools: composer:v2, symfony-cli
+
+      - name: 1. Install dependencies
+        env:
+          COMPOSER_AUTH: '{"github-oauth":{"github.com":"${{ secrets.BUNDLES_TOKEN || secrets.GITHUB_TOKEN }}"}}'
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: 2. Start the services
+        run: |
+          docker compose up -d --wait
+          symfony var:export --multiline | grep -E 'DATABASE_URL|MERCURE_URL|MERCURE_PUBLIC_URL|MAILER_DSN' | sed 's/:[^:@]*@/:***@/'
+
+      - name: 3. Run the migrations
+        run: |
+          symfony console cache:clear --no-warmup
+          symfony console doctrine:migrations:migrate --no-interaction
+          symfony console registry:sync --no-interaction
+          symfony console cache:warmup
+
+      - name: 4. Create the first administrator
+        run: |
+          PASSPHRASE="$(openssl rand -base64 24)"
+          printf '%s' "$PASSPHRASE" | symfony console team:user:create admin@example.test Ada Mwangi --tier=super-admin
+
+      - name: 5. Serve it
+        run: |
+          symfony server:start -d --no-tls --port=8000
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/login)" = 200
+
+      - name: The Mercure hub answers the project's address
+        run: |
+          HUB="$(symfony var:export --multiline | sed -n 's/^export MERCURE_PUBLIC_URL=//p')"
+          curl -s --max-time 3 -o /dev/null -D headers.txt -H 'Origin: http://127.0.0.1:8000' "$HUB?topic=ci" || true
+          grep -i '^access-control-allow-origin: http://127.0.0.1:8000' headers.txt
+
+      - name: Mail reaches the mail catcher
+        run: |
+          symfony console mailer:test admin@example.test --subject=ci
+          test "$(curl -s "http://$(docker compose port mailer 8025)/api/v1/messages" | php -r 'echo json_decode(stream_get_contents(STDIN))->total;')" -ge 1

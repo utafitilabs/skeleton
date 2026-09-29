@@ -53,14 +53,17 @@ configuration file this repository ships.
 - `config/packages/security.yaml` — the installation's one rule.
 - `config/routes/` — the shell's welcome page, the team's screens, the area
   screens.
-- A production `Dockerfile` (FrankenPHP), because every installation needs a
-  deploy shape on day one.
+- `compose.yaml` and `compose.override.yaml`: the services the project talks
+  to in development — PostgreSQL with PostGIS, the Mercure hub, a mail catcher —
+  started with `docker compose up -d` on any machine that runs Docker.
 - A test suite: the container compiles with the whole core on it, the core's
   screens are addressable, and everything is behind sign-in.
 
 ## What is deliberately not in it
 
-No bundle, no entity, no controller, no template, no fixture, no module. A line
+No bundle, no entity, no controller, no template, no fixture, no module, and no
+hosting configuration: no image, no web-server file, no deploy tool's settings.
+Where and how an installation is hosted is its own decision. A line
 added here is a line every future installation is stuck with, so the file stays
 out unless an installation genuinely owns the decision it encodes.
 

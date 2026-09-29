@@ -2,7 +2,10 @@
 services:
 ###> doctrine/doctrine-bundle ###
   database:
-    image: postgis/postgis:${POSTGRES_VERSION:-16}-3.5-alpine
+    # PostgreSQL + PostGIS, published for linux/amd64 and linux/arm64 alike
+    # (Apple Silicon included), built from the official postgres image and the
+    # PGDG PostGIS packages — https://github.com/utafitilabs/postgis
+    image: ghcr.io/utafitilabs/postgis:${POSTGRES_VERSION:-17}
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-app}
       # You should definitely change the password in production
@@ -19,7 +22,43 @@ services:
       # - ./docker/db/data:/var/lib/postgresql/data:rw
 ###< doctrine/doctrine-bundle ###
 
+###> symfony/mercure-bundle ###
+  mercure:
+    image: dunglas/mercure
+    restart: unless-stopped
+    environment:
+      # HTTPS off: the hub answers plain http on port 80, the port the Symfony
+      # CLI maps to MERCURE_URL. With HTTPS on (the image's default) port 80
+      # only redirects to 443, which is not published, and the address the CLI
+      # hands the app answers 308.
+      # https://mercure.rocks/docs/hub/install ("disable via SERVER_NAME=:80")
+      SERVER_NAME: ':80'
+      MERCURE_PUBLISHER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
+      MERCURE_SUBSCRIBER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
+      # Set the URL of your Symfony project (without trailing slash!) as value of the cors_origins directive
+      # (the Symfony CLI's address, over http and over https once its local certificate authority is installed)
+      MERCURE_EXTRA_DIRECTIVES: |
+        cors_origins http://127.0.0.1:8000 https://127.0.0.1:8000
+    # Comment the following line to disable the development mode
+    command: /usr/bin/caddy run --config /etc/caddy/dev.Caddyfile
+    # The Mercure documentation's own check: the image ships wget, not curl.
+    # https://mercure.rocks/docs/hub/traefik
+    # https://github.com/symfony/recipes/pull/1496
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/healthz"]
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    volumes:
+      - mercure_data:/data
+      - mercure_config:/config
+###< symfony/mercure-bundle ###
+
 volumes:
 ###> doctrine/doctrine-bundle ###
   database_data:
 ###< doctrine/doctrine-bundle ###
+###> symfony/mercure-bundle ###
+  mercure_data:
+  mercure_config:
+###< symfony/mercure-bundle ###

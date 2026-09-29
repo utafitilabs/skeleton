@@ -16,7 +16,7 @@ installed with composer.
 - [Requirements](#requirements)
 - [Install guide](#install-guide)
   - [1. Create the project](#1-create-the-project)
-  - [2. Give it a database](#2-give-it-a-database)
+  - [2. Start the services](#2-start-the-services)
   - [3. Run the migrations](#3-run-the-migrations)
   - [4. Create the first administrator](#4-create-the-first-administrator)
   - [5. Serve it](#5-serve-it)
@@ -107,21 +107,23 @@ and they get their GiST indexes from the mapping. The core ships the migrations
 that create its own tables, so there is no hand-written DDL anywhere in an
 installation and nothing to generate before the first one runs.
 
-Deployment is a standard Symfony application. This repository ships a production
-`Dockerfile` (FrankenPHP): build the image and run it wherever you host
-containers, next to any PostGIS database. The image warms the cache when it is
-built, through this project's own Composer auto-scripts, so a warm-up that does
-not fit fails the build; the container's entrypoint waits for the database,
-migrates and syncs the catalogue, and does nothing else. The same image runs
-the queue worker (`php bin/console messenger:consume …`); that start waits for
-the database and leaves migrating to the web server's. A web request runs for at
-most 30 seconds (`max_execution_time`, `.docker/conf.d/40-requests.ini`), above
-the core's database statement timeout.
+Deployment is a standard Symfony application, and where and how to host it is
+the installation's choice: this repository ships no hosting configuration — no
+image, no web-server file, no deploy tool. What any host has to do is the same
+list the install guide below does by hand: install the dependencies, compile the
+assets (`php bin/console asset-map:compile`), migrate, sync the catalogue
+(`registry:sync`), serve `public/`, and keep the queue worker running.
 
 ## Requirements
 
-PHP 8.4 or newer with the `ctype`, `iconv`, `intl` and `pdo_pgsql` extensions,
-Composer, and a PostgreSQL database with PostGIS.
+- PHP 8.4 or newer with the `ctype`, `iconv`, `intl` and `pdo_pgsql` extensions,
+  and Composer.
+- The [Symfony CLI](https://symfony.com/download), which serves the project and
+  hands it the addresses of the services below.
+- Docker with Compose, for the services the project talks to: PostgreSQL with
+  PostGIS, the Mercure hub and a mail catcher. `compose.yaml` runs all three, on
+  Linux, macOS or Windows, on amd64 or arm64. A PostgreSQL with PostGIS of your
+  own works instead of Docker; see step 2.
 
 Turn OPcache on for the command line on a development box — `opcache.enable_cli=1`
 in `php.ini` — so the console executes cached opcodes instead of keeping every
@@ -150,25 +152,36 @@ bundle, `config/packages/` carries one commented file per core bundle plus
 paste and no firewall to turn on. What there is not yet is a database.
 
 
-## 2. Give it a database
-
-uhifadhi stores gazetted boundaries as PostGIS geometry, so the database needs
-the PostGIS extension.
-
-The project ships a `compose.yaml` with a PostGIS image, and `.env` already
-points `DATABASE_URL` at it:
+## 2. Start the services
 
 ```bash
 docker compose up -d
 ```
 
-That starts a PostGIS cluster on `127.0.0.1:5432` with the `postgis` extension
-available to the `app` database. You write nothing into `.env`.
+That starts three containers, defined in `compose.yaml` and
+`compose.override.yaml`:
+
+| Service | What it is |
+|---|---|
+| `database` | PostgreSQL 17 with PostGIS ([`ghcr.io/utafitilabs/postgis`](https://github.com/utafitilabs/postgis)), its data kept in a Docker volume |
+| `mercure` | the [Mercure](https://mercure.rocks) hub the live plates move over |
+| `mailer` | [Mailpit](https://mailpit.axllent.org), which catches every message the project sends |
+
+Each is published on a free port of the machine, and the Symfony CLI reads those
+ports from Docker: run every command through it — `symfony console …` rather
+than `php bin/console …` — and `DATABASE_URL`, `MERCURE_URL`,
+`MERCURE_PUBLIC_URL` and `MAILER_DSN` are set for you, with nothing written into
+`.env`. `symfony var:export --multiline` prints what it found, and
+`docker compose port mailer 8025` names the address where Mailpit shows the mail.
+
+`docker compose down` stops them and keeps the data; `docker compose down -v`
+deletes the database too.
 
 To use a database of your own instead, set `DATABASE_URL` in `.env.local`
 yourself. You do not need to run `CREATE EXTENSION postgis` in it — the core's
 first migration does, in step 3 — unless the database will not grant it; see
-that step.
+that step. Without a Mercure hub the project runs as well: `MERCURE_URL` is
+empty in `.env`, every page answers, and every live plate is drawn once.
 
 ## 3. Run the migrations
 
@@ -176,10 +189,10 @@ The core ships the versions that create its own tables, so there is nothing to
 generate: you run them.
 
 ```bash
-php bin/console cache:clear --no-warmup
-php bin/console doctrine:migrations:migrate
-php bin/console registry:sync
-php bin/console cache:warmup
+symfony console cache:clear --no-warmup
+symfony console doctrine:migrations:migrate
+symfony console registry:sync
+symfony console cache:warmup
 ```
 
 Four commands, in that order: the clear and the warm are the two ends of it, and
@@ -208,7 +221,7 @@ the namespace `config/packages/doctrine_migrations.yaml` maps here —
 yours. If you add a second namespace of your own, name the one you mean:
 
 ```bash
-php bin/console doctrine:migrations:diff --namespace=DoctrineMigrations
+symfony console doctrine:migrations:diff --namespace=DoctrineMigrations
 ```
 
 The first version the core runs is `CREATE EXTENSION IF NOT EXISTS postgis`, so
@@ -219,7 +232,7 @@ provider, and the core's first version then runs and does nothing.
 
 There is no asset step here. In development AssetMapper serves every stylesheet
 and script straight from its source; compiling them (`asset-map:compile`) is a
-build step, and the production `Dockerfile` runs it when the image is built.
+step of deploying, and whatever builds the release runs it.
 
 ## 4. Create the first administrator
 
@@ -231,7 +244,7 @@ too, and it asks for everything it needs — the address, the two names, the tie
 and last the passphrase, which is never echoed:
 
 ```bash
-php bin/console team:user:create
+symfony console team:user:create
 ```
 
 The tier defaults to `super-admin`, which is what this account is for: the first
@@ -242,7 +255,7 @@ For a script, everything can be given on the line, with the passphrase read from
 standard input so it never reaches a shell history or a process list:
 
 ```bash
-printf '%s' "$PASSPHRASE" | php bin/console team:user:create you@example.org Ada Mwangi --tier=super-admin
+printf '%s' "$PASSPHRASE" | symfony console team:user:create you@example.org Ada Mwangi --tier=super-admin
 ```
 
 ## 5. Serve it
@@ -251,9 +264,15 @@ printf '%s' "$PASSPHRASE" | php bin/console team:user:create you@example.org Ada
 symfony server:start -d
 ```
 
-Open the address it prints and sign in as the administrator from step 4.
-Without the Symfony CLI, `php -S 127.0.0.1:8000 -t public` serves it for a
-quick look.
+Open the address it prints — `https://127.0.0.1:8000` once
+`symfony server:ca:install` has given the machine its local certificate
+authority, `http://127.0.0.1:8000` before — and sign in as the administrator
+from step 4. The Mercure hub accepts subscriptions from exactly those two
+addresses (`cors_origins` in `compose.yaml`); serve on another and add it there.
+
+Served any other way — `php -S 127.0.0.1:8000 -t public`, say — the project
+reads only `.env` and `.env.local`, so write the four addresses from
+`symfony var:export --multiline` into `.env.local` first.
 
 ## 6. Run the worker
 
@@ -261,26 +280,26 @@ Work a page hands over — and the `default` schedule's recurring tasks — runs
 the queue worker, one long-running console command:
 
 ```bash
-php bin/console messenger:consume async scheduler_default -vv
+symfony console messenger:consume async scheduler_default -vv
 ```
 
-Until it runs, handed-over work waits in the database and nothing is lost. With
-[fundi](https://github.com/utafitilabs/fundi-cli) serving the project, declare
-it once in `.fundi.local.yaml` and `fundi server:start` runs it next to the web
-server and starts it again when it stops:
+Until it runs, handed-over work waits in the database and nothing is lost. To
+have the Symfony CLI run it beside the web server, and start it again when the
+code changes, declare it in `.symfony.local.yaml`; `docker_compose: ~` has the
+same server start the services of step 2:
 
 ```yaml
 workers:
-    queue:
-        cmd: [php, bin/console, messenger:consume, async, scheduler_default, --time-limit=3600, --memory-limit=256M]
+    docker_compose: ~
+    messenger_consume:
+        cmd: ['symfony', 'console', 'messenger:consume', 'async', 'scheduler_default', '--time-limit=3600', '--memory-limit=256M']
+        watch: ['config', 'src', 'templates', 'vendor/composer/installed.json']
 ```
 
-In production the worker is a role of the deployment on the same image: with
-fundi, a `deploy.workers` entry in the same file, which `fundi deploy:init`
-writes into `config/deploy.yml`. After a deploy, the worker is a new container
-running the new code; anywhere else, run `php bin/console messenger:stop-workers`
-after the code changes, so a worker finishes its message and is started again on
-it.
+Wherever the project is hosted, the worker is a process kept running beside the
+web server. After the code changes, `php bin/console messenger:stop-workers`
+lets each worker finish its message and stop, so it is started again on the new
+code.
 
 ## 7. Add modules
 
@@ -290,10 +309,10 @@ assets — and, like the core, ships the versions that create them:
 
 ```bash
 composer require uhifadhi/storage-module
-php bin/console cache:clear --no-warmup
-php bin/console doctrine:migrations:migrate
-php bin/console registry:sync
-php bin/console cache:warmup
+symfony console cache:clear --no-warmup
+symfony console doctrine:migrations:migrate
+symfony console registry:sync
+symfony console cache:warmup
 ```
 
 The third is what enters the module in the catalogue and gives every existing
@@ -302,7 +321,7 @@ namespace must then have nothing to write — every package keeps its migrations
 under a namespace of its own, which is why the command names one:
 
 ```bash
-php bin/console doctrine:migrations:diff --namespace=DoctrineMigrations   # No changes detected
+symfony console doctrine:migrations:diff --namespace=DoctrineMigrations   # No changes detected
 ```
 
 An administrator then switches the module on for the areas that want it, from
