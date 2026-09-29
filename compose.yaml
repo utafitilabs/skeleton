@@ -24,7 +24,12 @@ services:
 
 ###> symfony/mercure-bundle ###
   mercure:
-    image: dunglas/mercure
+    # Pinned to the 0.24 line: the hub that FrankenPHP bundles (v1.12.x carries
+    # Mercure 0.24.2), so development speaks the protocol a FrankenPHP-served
+    # installation does. Mercure 1.0 changes the subscription protocol
+    # (`match=` for `topic=`, object claims, a __Secure- cookie) and drops the
+    # dev.Caddyfile started below; the platform moves to it as one change.
+    image: dunglas/mercure:v0.24
     restart: unless-stopped
     environment:
       # HTTPS off: the hub answers plain http on port 80, the port the Symfony
