@@ -22,6 +22,7 @@ installed with composer.
   - [5. Serve it](#5-serve-it)
   - [6. Run the worker](#6-run-the-worker)
   - [7. Add modules](#7-add-modules)
+  - [8. Seed the installation](#8-seed-the-installation)
 - [What is behind sign-in](#what-is-behind-sign-in)
 - [The front door](#the-front-door)
 - [Versions and branches](#versions-and-branches)
@@ -52,7 +53,7 @@ theme. Everything a deployment can *do* arrives as a module on top of those two,
 and the shell never learns any module's name — it renders what the registry
 tells it is installed.
 
-A fresh installation is empty, and honestly so. There are no demo areas, no
+A fresh installation is empty, and honestly so. There are no seeded areas, no
 sample team and no pre-installed capabilities: an organization creates its own
 areas, invites its own people and installs the modules it needs. The install
 guide below is the ordered path from nothing to that first signed-in screen.
@@ -364,7 +365,27 @@ Required with `--dev`, so a production build never carries them:
 
 | Module | What it adds | Install |
 |---|---|---|
-| `uhifadhi/devkit-module` | demo content and the commands that seed it; every module's development commands in one place | `composer require --dev uhifadhi/devkit-module` · [devkit-module README](https://github.com/utafitilabs/devkit-module#installation) |
+| `uhifadhi/devkit-module` | seed content and the command that loads it, `fixtures:seed`; every module's development commands in one place | `composer require --dev uhifadhi/devkit-module` · [devkit-module README](https://github.com/utafitilabs/devkit-module#installation) |
+
+## 8. Seed the installation
+
+To look around, or to build against realistic records, devkit seeds an invented
+organization: **Uhifadhi Nature Reserves**, with two game reserves, their zones
+and their posts, the people posted at them, and a month of whatever each
+installed module records — patrols, incidents, watches. It is development
+content, installed with `--dev` so a production build never carries it:
+
+```bash
+composer require --dev uhifadhi/devkit-module
+symfony php -d memory_limit=2G bin/console fixtures:seed --no-debug
+```
+
+Seed after the modules of step 7 are installed: each module seeds its own
+records onto the reserves. A second run adds nothing. The organization's name
+is the shell's `brand_name` in `config/packages/shell.yaml`; set it to
+`Uhifadhi Nature Reserves` for the seeded installation to read as one. Sign in
+as the administrator from step 4 — the seeded people have no passwords — and
+switch the modules on for the reserves from each reserve's Modules section.
 
 ---
 
