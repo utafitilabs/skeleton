@@ -20,7 +20,7 @@ installed with composer.
   - [3. Run the migrations](#3-run-the-migrations)
   - [4. Create the first administrator](#4-create-the-first-administrator)
   - [5. Serve it](#5-serve-it)
-  - [6. Run the worker](#6-run-the-worker)
+  - [6. The worker](#6-the-worker)
   - [7. Add modules](#7-add-modules)
   - [8. Seed the installation](#8-seed-the-installation)
 - [What is behind sign-in](#what-is-behind-sign-in)
@@ -221,8 +221,15 @@ area's on/off choices and ordering are never revisited by a deploy.
 `migrations/` in this project stays **yours** — it is where
 `doctrine:migrations:diff` writes the versions for entities you write in
 `src/Entity/`. A fresh installation has none, and running `diff` before you have
-written an entity is how you confirm that: it says
-`No changes detected in your mapping information.`
+written an entity is how you confirm that. **The answer comes in red, and it is
+the right one**: Doctrine reports "nothing to write" as an error and exits
+non-zero, so a fresh installation prints
+
+```text
+[critical] Error thrown while running command "doctrine:migrations:diff". Message: "No changes detected in your mapping information."
+```
+
+That line is the check passing, not failing.
 
 Run it with no flag. Each core bundle registers a migrations namespace of its
 own, and `diff` with no `--namespace` writes into the *first* one configured —
@@ -292,22 +299,27 @@ Served any other way — `php -S 127.0.0.1:8000 -t public`, say — the project
 reads only `.env` and `.env.local`, so write the four addresses from
 `symfony var:export --multiline` into `.env.local` first.
 
-## 6. Run the worker
+## 6. The worker
 
-An installation needs one worker: the queue worker, consuming two transports.
+**Nothing to run here if you followed step 5.** `symfony server:start` has
+already started the one worker an installation needs, because
+`.symfony.local.yaml` declares it; `symfony server:status` lists it. It is the
+queue worker, consuming two transports:
 
 | Transport | What runs on it |
 |---|---|
 | `async` | work a request hands over instead of doing: every message that implements the core's queue marker, `Uhifadhi\Contracts\Queue\AsyncMessageInterface` — filling a module's history once it is switched on, for one |
 | `scheduler_default` | the recurring tasks of the `default` schedule: the core recomputes the figures of the periods still open, hourly from 06:00 to 20:00 and once at 02:00, and an installed module adds its own |
 
+Under `symfony server:start` it runs beside the web server and is started again
+when the code or the installed packages change. **Only if you serve the project
+some other way** do you start it yourself, in a terminal of its own:
+
 ```bash
 symfony console messenger:consume async scheduler_default -vv
 ```
 
-`.symfony.local.yaml` already declares it, so under `symfony server:start` it
-runs beside the web server and is started again when the code or the installed
-packages change. Until it runs, handed-over work waits in the database — `async`
+Until it runs, handed-over work waits in the database — `async`
 and `failed` are queues in the `messenger_messages` table, on
 `MESSENGER_TRANSPORT_DSN` — and nothing is lost; a message that fails every
 retry lands in `failed`, where `symfony console messenger:failed:show` lists it.
@@ -337,8 +349,12 @@ namespace must then have nothing to write — every package keeps its migrations
 under a namespace of its own, which is why the command names one:
 
 ```bash
-symfony console doctrine:migrations:diff --namespace=DoctrineMigrations   # No changes detected
+symfony console doctrine:migrations:diff --namespace=DoctrineMigrations
 ```
+
+It answers in red — `[critical] … No changes detected in your mapping
+information.` — and that is the answer you want: the module brought every table
+it needs, and the installation's own `migrations/` has nothing to add.
 
 An administrator then switches the module on for the areas that want it, from
 the area's Modules section under its Configure action.
