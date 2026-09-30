@@ -104,6 +104,14 @@
             "reorder": {
                 "enabled": true,
                 "fetch": "eager"
+            },
+            "copy": {
+                "enabled": true,
+                "fetch": "lazy"
+            },
+            "position-card": {
+                "enabled": true,
+                "fetch": "lazy"
             }
         }
     },
