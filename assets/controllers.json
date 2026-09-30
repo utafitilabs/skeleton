@@ -112,6 +112,10 @@
             "position-card": {
                 "enabled": true,
                 "fetch": "lazy"
+            },
+            "delete-confirm": {
+                "enabled": true,
+                "fetch": "lazy"
             }
         }
     },
