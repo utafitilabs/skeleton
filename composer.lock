@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ed2c96e1531891e912430a681be2ed64",
+    "content-hash": "095488092107c938b81c2b928733fc6c",
     "packages": [
         {
             "name": "api-platform/core",
@@ -7825,16 +7825,16 @@
         },
         {
             "name": "uhifadhi/uhifadhi",
-            "version": "v0.1.24",
+            "version": "v0.1.25",
             "source": {
                 "type": "git",
                 "url": "https://github.com/utafitilabs/uhifadhi.git",
-                "reference": "edb399767549b72b50d77d0800f11f72cb130751"
+                "reference": "f2945bd03a403ba8326845018ca42afe1b8b5052"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/utafitilabs/uhifadhi/zipball/edb399767549b72b50d77d0800f11f72cb130751",
-                "reference": "edb399767549b72b50d77d0800f11f72cb130751",
+                "url": "https://api.github.com/repos/utafitilabs/uhifadhi/zipball/f2945bd03a403ba8326845018ca42afe1b8b5052",
+                "reference": "f2945bd03a403ba8326845018ca42afe1b8b5052",
                 "shasum": ""
             },
             "require": {
@@ -7846,6 +7846,7 @@
                 "doctrine/migrations": "^3.9",
                 "doctrine/orm": "^3.5",
                 "dragonmantank/cron-expression": "^3.4",
+                "ext-filter": "*",
                 "ext-mbstring": "*",
                 "php": ">=8.4",
                 "psr/clock": "^1.0",
@@ -7940,9 +7941,9 @@
             ],
             "support": {
                 "issues": "https://github.com/utafitilabs/uhifadhi/issues",
-                "source": "https://github.com/utafitilabs/uhifadhi/tree/v0.1.24"
+                "source": "https://github.com/utafitilabs/uhifadhi/tree/v0.1.25"
             },
-            "time": "2026-09-30T19:49:19+00:00"
+            "time": "2026-09-30T21:08:02+00:00"
         },
         {
             "name": "utafitilabs/postgis-bundle",
