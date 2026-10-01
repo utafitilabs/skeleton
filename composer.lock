@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "788af21104509e65b79a56437bc89546",
+    "content-hash": "f3cf11808a3dece4c310d965731b9c93",
     "packages": [
         {
             "name": "api-platform/core",
@@ -1003,16 +1003,16 @@
         },
         {
             "name": "doctrine/lexer",
-            "version": "3.0.2",
+            "version": "3.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/lexer.git",
-                "reference": "e96fe45e92a54233726014a7cc7340abf29bb14c"
+                "reference": "71d305eaa6480d3d3460c7d053d1da7749fa9cca"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/lexer/zipball/e96fe45e92a54233726014a7cc7340abf29bb14c",
-                "reference": "e96fe45e92a54233726014a7cc7340abf29bb14c",
+                "url": "https://api.github.com/repos/doctrine/lexer/zipball/71d305eaa6480d3d3460c7d053d1da7749fa9cca",
+                "reference": "71d305eaa6480d3d3460c7d053d1da7749fa9cca",
                 "shasum": ""
             },
             "require": {
@@ -1058,7 +1058,7 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/lexer/issues",
-                "source": "https://github.com/doctrine/lexer/tree/3.0.2"
+                "source": "https://github.com/doctrine/lexer/tree/3.0.3"
             },
             "funding": [
                 {
@@ -1074,7 +1074,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-06-14T20:44:06+00:00"
+            "time": "2026-10-01T06:59:29+00:00"
         },
         {
             "name": "doctrine/migrations",
@@ -7825,16 +7825,16 @@
         },
         {
             "name": "uhifadhi/uhifadhi",
-            "version": "v0.1.26",
+            "version": "v0.1.27",
             "source": {
                 "type": "git",
                 "url": "https://github.com/utafitilabs/uhifadhi.git",
-                "reference": "86b44de6d208ab168246117a521929ca1081b1dd"
+                "reference": "923f1c82011fab99e90080ba3ce97a3aaef52a28"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/utafitilabs/uhifadhi/zipball/86b44de6d208ab168246117a521929ca1081b1dd",
-                "reference": "86b44de6d208ab168246117a521929ca1081b1dd",
+                "url": "https://api.github.com/repos/utafitilabs/uhifadhi/zipball/923f1c82011fab99e90080ba3ce97a3aaef52a28",
+                "reference": "923f1c82011fab99e90080ba3ce97a3aaef52a28",
                 "shasum": ""
             },
             "require": {
@@ -7941,9 +7941,9 @@
             ],
             "support": {
                 "issues": "https://github.com/utafitilabs/uhifadhi/issues",
-                "source": "https://github.com/utafitilabs/uhifadhi/tree/v0.1.26"
+                "source": "https://github.com/utafitilabs/uhifadhi/tree/v0.1.27"
             },
-            "time": "2026-09-30T22:01:17+00:00"
+            "time": "2026-10-01T08:26:14+00:00"
         },
         {
             "name": "utafitilabs/postgis-bundle",
